@@ -1,0 +1,73 @@
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #d9242d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease-out;
+}
+
+.loading-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.train-container {
+  width: 300px;
+  height: 360px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  position: relative;
+}
+
+.metro-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Animate the train body to simulate shaking on tracks */
+.train-body {
+  animation: trainShake 0.4s infinite alternate ease-in-out;
+  transform-origin: center;
+}
+
+.track-tie {
+  animation: trackMove 1s infinite ease-in;
+  transform-origin: center top;
+}
+
+/* Delay for different track ties to create continuous motion */
+.tie-1 { animation-delay: 0s; }
+.tie-2 { animation-delay: -0.2s; }
+.tie-3 { animation-delay: -0.4s; }
+.tie-4 { animation-delay: -0.6s; }
+.tie-5 { animation-delay: -0.8s; }
+
+@keyframes trainShake {
+  0% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-2px) rotate(0.5deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-1px) rotate(-0.5deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes trackMove {
+  0% {
+    transform: translateY(0) scaleY(0.5);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(70px) scale(1.5);
+    opacity: 1;
+  }
+}
