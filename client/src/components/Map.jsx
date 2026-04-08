@@ -335,7 +335,7 @@ export default function Map() {
         />
 
         {/* Map tiles — standard OSM with POI labels, CSS-inverted to dark mode */}
-        <TileLayer url={TILE_URL} attribution={TILE_ATTR} />
+        <TileLayer url={TILE_URL} attribution={TILE_ATTR} detectRetina={true} />
 
         {/* User location */}
         <UserLocationMarker position={location} heading={heading} />
