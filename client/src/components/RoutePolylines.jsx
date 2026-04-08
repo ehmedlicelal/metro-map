@@ -26,7 +26,7 @@ export default function RoutePolylines({ phase, route, walkingRoute, postMetroRo
             color: '#4ecca3',
             weight: 5,
             opacity: 0.9,
-            dashArray: '10, 8',
+            dashArray: '5, 10',
             lineCap: 'round'
           }}
         />
@@ -123,7 +123,7 @@ export default function RoutePolylines({ phase, route, walkingRoute, postMetroRo
             color: '#4ecca3',
             weight: 5,
             opacity: 0.9,
-            dashArray: '10, 8',
+            dashArray: '5, 10',
             lineCap: 'round'
           }}
         />
