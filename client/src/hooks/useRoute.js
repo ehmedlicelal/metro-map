@@ -58,6 +58,7 @@ export function useRoute() {
 
   return {
     route,
+    setRoute,
     stationData,
     loading,
     error,

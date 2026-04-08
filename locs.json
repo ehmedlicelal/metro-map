@@ -1,0 +1,23 @@
+[
+  {
+    "place_id": 188905524,
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+    "osm_type": "way",
+    "osm_id": 407723335,
+    "lat": "40.4060470",
+    "lon": "49.8483572",
+    "class": "office",
+    "type": "government",
+    "place_rank": 30,
+    "importance": 0.20759174723523172,
+    "addresstype": "office",
+    "name": "E-Gov elektron hökümət",
+    "display_name": "E-Gov elektron hökümət, 89, Atatürk prospekti, Milyonerlər məhəlləsi, Dərnəgül, Bakı İnzibati Ərazisi, 1069, Azərbaycan",
+    "boundingbox": [
+      "40.4057437",
+      "40.4063501",
+      "49.8481559",
+      "49.8485585"
+    ]
+  }
+]

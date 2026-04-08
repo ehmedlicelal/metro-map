@@ -27,19 +27,29 @@ const BAKU_BOUNDS = [
   [40.50, 50.10]  // Northeast corner
 ];
 
-// Standard OSM tiles — shows all POI labels (cafes, shops, etc.) when zoomed in.
-// A CSS filter on .leaflet-tile-pane inverts to dark mode.
-const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+// Google Maps Standard tiles - Provides large clear typography, deep zoom levels, and native Azerbaijani localization
+const TILE_URL = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=az';
+const TILE_ATTR = '&copy; <a href="https://www.google.com/maps">Google Maps</a>';
+
+function formatDuration(seconds) {
+  if (!seconds) return '';
+  const mins = Math.ceil(seconds / 60);
+  if (mins >= 60) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h}h ${m}m`;
+  }
+  return `${mins} min`;
+}
 
 /**
  * Create a metro station icon (small circle with line color)
  */
 function createStationIcon(color, isOnRoute) {
-  const size = isOnRoute ? 16 : 10;
+  const size = isOnRoute ? 24 : 16;
   const svg = `
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="${isOnRoute ? color : '#2a2a4a'}" stroke="${color || '#555'}" stroke-width="${isOnRoute ? 2 : 1.5}"/>
+      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="${isOnRoute ? color : '#2a2a4a'}" stroke="${color || '#555'}" stroke-width="${isOnRoute ? 3 : 2}"/>
     </svg>
   `;
   return L.divIcon({
@@ -153,7 +163,7 @@ export default function Map() {
   const mapRef = useRef(null);
   const { location: gpsLocation, heading, speed, error: geoError } = useGeolocation();
   const {
-    route, stationData, loading, error: routeError,
+    route, setRoute, stationData, loading, error: routeError,
     phase, setPhase, loadStations, calculateRoute, clearRoute
   } = useRoute();
 
@@ -163,6 +173,7 @@ export default function Map() {
   const [postMetroRoute, setPostMetroRoute] = useState(null);
   const [currentStopIndex, setCurrentStopIndex] = useState(0);
   const [bottomCardInfo, setBottomCardInfo] = useState(null);
+  const [routeOptions, setRouteOptions] = useState(null);
   const [manualLocation, setManualLocation] = useState(null);
   const [placeMarkers, setPlaceMarkers] = useState([]);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
@@ -223,7 +234,6 @@ export default function Map() {
     const result = await calculateRoute(userLat, userLng, dest.lat, dest.lng);
 
     if (result) {
-      // Walk-only response: destination is close enough to just walk
       if (result.walkOnly) {
         const directWalk = await fetchWalkingRoute(
           userLat, userLng,
@@ -233,40 +243,99 @@ export default function Map() {
         setPostMetroRoute(null);
         setBottomCardInfo({
           walkOnly: true,
-          walkDistance: result.destination.walkingDistance
+          walkDistance: result.destination.walkingDistance,
+          totalTime: directWalk ? directWalk.duration : 0
         });
         return;
       }
 
-      // Fetch walking route to entry station
-      if (result.entry?.recommendedEntry) {
-        const walk = await fetchWalkingRoute(
-          userLat, userLng,
-          result.entry.recommendedEntry.lat,
-          result.entry.recommendedEntry.lng
-        );
+      // Fetch all variations
+      const directWalk = await fetchWalkingRoute(userLat, userLng, dest.lat, dest.lng);
+      
+      const walk = result.entry?.recommendedEntry ? await fetchWalkingRoute(
+        userLat, userLng,
+        result.entry.recommendedEntry.lat, result.entry.recommendedEntry.lng
+      ) : null;
+      
+      const postWalk = result.exit?.recommendedExit ? await fetchWalkingRoute(
+        result.exit.recommendedExit.lat, result.exit.recommendedExit.lng,
+        dest.lat, dest.lng
+      ) : null;
+
+      const directWalkDuration = directWalk ? directWalk.duration : Infinity;
+      const walkDuration = walk ? walk.duration : 0;
+      const postWalkDuration = postWalk ? postWalk.duration : 0;
+      const metroStops = result.metro?.totalStops || 0;
+      
+      const metroWaitTime = 180; // 3 mins average wait for trains
+      const metroTransferTime = result.metro?.transfers?.length ? result.metro.transfers.length * 300 : 0; // 5 mins per transfer
+      const stationOverhead = 300; // 5 mins total to go down/up escalators and pass ticket gates
+      
+      const metroTotalDuration = walkDuration + postWalkDuration + metroWaitTime + metroTransferTime + stationOverhead + (metroStops * 120);
+
+      const calculatedInfo = {
+        directWalk,
+        entryWalk: walk,
+        exitWalk: postWalk,
+        directWalkDuration,
+        metroTotalDuration,
+        metroResult: result,
+      };
+
+      // If walking is faster, or takes less than 10 minutes longer than the metro, offer both options
+      if (directWalkDuration <= metroTotalDuration + 600) {
+        setRouteOptions(calculatedInfo);
+      } else {
+        // Metro is significantly faster, pick metro side-effects
         setWalkingRoute(walk);
-      }
-
-      // Fetch walking route from exit to destination
-      if (result.exit?.recommendedExit) {
-        const postWalk = await fetchWalkingRoute(
-          result.exit.recommendedExit.lat,
-          result.exit.recommendedExit.lng,
-          dest.lat, dest.lng
-        );
         setPostMetroRoute(postWalk);
+        setBottomCardInfo({
+          walkDistance: result.entry?.walkingDistance,
+          stationName_az: result.entry?.station?.station_az,
+          stationName_en: result.entry?.station?.station_en,
+          exitLabel: result.entry?.recommendedEntry?.label,
+          totalTime: metroTotalDuration
+        });
       }
-
-      // Set bottom card info for Phase 1
-      setBottomCardInfo({
-        walkDistance: result.entry?.walkingDistance,
-        stationName_az: result.entry?.station?.station_az,
-        stationName_en: result.entry?.station?.station_en,
-        exitLabel: result.entry?.recommendedEntry?.label
-      });
     }
   }, [location, calculateRoute]);
+
+  const applyWalkRoute = useCallback(() => {
+    if (!routeOptions) return;
+    const walkRouteObj = {
+      walkOnly: true,
+      destination: {
+        lat: destination.lat,
+        lng: destination.lng,
+        walkingDistance: Math.round(routeOptions.directWalk?.distance || 0)
+      }
+    };
+    setRoute(walkRouteObj);
+    setWalkingRoute(routeOptions.directWalk);
+    setPostMetroRoute(null);
+    setBottomCardInfo({
+      walkOnly: true,
+      walkDistance: Math.round(routeOptions.directWalk?.distance || 0),
+      totalTime: routeOptions.directWalkDuration
+    });
+    setPhase(1);
+    setRouteOptions(null);
+  }, [routeOptions, destination, setRoute, setPhase]);
+
+  const applyMetroRoute = useCallback(() => {
+    if (!routeOptions) return;
+    setWalkingRoute(routeOptions.entryWalk);
+    setPostMetroRoute(routeOptions.exitWalk);
+    setBottomCardInfo({
+      walkDistance: routeOptions.metroResult.entry?.walkingDistance,
+      stationName_az: routeOptions.metroResult.entry?.station?.station_az,
+      stationName_en: routeOptions.metroResult.entry?.station?.station_en,
+      exitLabel: routeOptions.metroResult.entry?.recommendedEntry?.label,
+      totalTime: routeOptions.metroTotalDuration
+    });
+    setPhase(1);
+    setRouteOptions(null);
+  }, [routeOptions, setPhase]);
 
   // Keep ref in sync for map-click handler
   selectDestRef.current = handleSelectDestination;
@@ -277,6 +346,7 @@ export default function Map() {
     setWalkingRoute(null);
     setPostMetroRoute(null);
     setBottomCardInfo(null);
+    setRouteOptions(null);
     setCurrentStopIndex(0);
     setPlaceMarkers([]);
   }, [clearRoute]);
@@ -325,6 +395,7 @@ export default function Map() {
         maxBounds={BAKU_BOUNDS}
         maxBoundsViscosity={0.9}
         minZoom={11}
+        maxZoom={22}
       >
         <MapController mapRef={mapRef} />
         <ZoomTracker onZoomChange={setZoomLevel} />
@@ -334,8 +405,8 @@ export default function Map() {
           onSetLocation={handleMapClickLocation}
         />
 
-        {/* Map tiles — standard OSM with POI labels, CSS-inverted to dark mode */}
-        <TileLayer url={TILE_URL} attribution={TILE_ATTR} detectRetina={true} />
+        {/* Map tiles — Google Maps standard */}
+        <TileLayer url={TILE_URL} attribution={TILE_ATTR} maxZoom={22} maxNativeZoom={21} />
 
         {/* User location */}
         <UserLocationMarker position={location} heading={heading} />
@@ -356,16 +427,14 @@ export default function Map() {
                 </span>
               </div>
             </Popup>
-            {zoomLevel >= 13 && (
-              <Tooltip
-                permanent
-                direction="right"
-                offset={[8, -4]}
-                className="station-label"
-              >
-                {lang === 'az' ? station.station_az : station.station_en}
-              </Tooltip>
-            )}
+            <Tooltip
+              permanent
+              direction="right"
+              offset={[14, -4]}
+              className="station-label"
+            >
+              {lang === 'az' ? station.station_az : station.station_en}
+            </Tooltip>
           </Marker>
         ))}
 
@@ -466,7 +535,7 @@ export default function Map() {
       </div>
 
       {/* Phase Indicator */}
-      <PhaseIndicator phase={phase} lang={lang} />
+      <PhaseIndicator phase={phase} lang={lang} isWalkOnly={route?.walkOnly} />
 
       {/* Walk-only card — destination is nearby, no metro needed */}
       {bottomCardInfo?.walkOnly && (
@@ -475,8 +544,8 @@ export default function Map() {
           <div className="walk-card-info">
             <span className="walk-distance">
               {lang === 'az'
-                ? `${bottomCardInfo.walkDistance}m piyada`
-                : `Walk ${bottomCardInfo.walkDistance}m`}
+                ? `${bottomCardInfo.walkDistance}m piyada (${formatDuration(bottomCardInfo.totalTime)})`
+                : `Walk ${bottomCardInfo.walkDistance}m (${formatDuration(bottomCardInfo.totalTime)})`}
             </span>
             <span className="walk-station walk-station-highlight">
               {lang === 'az'
@@ -500,8 +569,8 @@ export default function Map() {
           <div className="walk-card-info">
             <span className="walk-distance">
               {lang === 'az'
-                ? `${bottomCardInfo.walkDistance}m piyada`
-                : `Walk ${bottomCardInfo.walkDistance}m`}
+                ? `${bottomCardInfo.walkDistance}m piyada (${formatDuration(bottomCardInfo.totalTime)})`
+                : `Walk ${bottomCardInfo.walkDistance}m (${formatDuration(bottomCardInfo.totalTime)})`}
             </span>
             <span className="walk-station">
               {lang === 'az'
@@ -522,6 +591,38 @@ export default function Map() {
           </button>
         </div>
       )}
+
+      {/* Route Options Card (Walk vs Metro) */}
+      {routeOptions && (
+        <div className="route-options-backdrop" id="route-options-modal">
+          <div className="route-options-card">
+            <h3>{lang === 'az' ? 'Marşrutunuzu seçin' : 'Choose your route'}</h3>
+            <p className="options-subtitle">
+              {lang === 'az' ? 'Piyada getmək daha tezdir!' : 'Walking is faster!'}
+            </p>
+            <div className="options-buttons">
+              <button className="option-btn walk-option" onClick={applyWalkRoute}>
+                <span className="icon">🚶</span>
+                <span className="details">
+                  <span className="mode">{lang === 'az' ? 'Piyada' : 'Walk'}</span>
+                  <span className="time">{formatDuration(routeOptions.directWalkDuration)}</span>
+                </span>
+              </button>
+              <button className="option-btn metro-option" onClick={applyMetroRoute}>
+                <span className="icon">🚇</span>
+                <span className="details">
+                  <span className="mode">{lang === 'az' ? 'Metro' : 'Metro'}</span>
+                  <span className="time">{formatDuration(routeOptions.metroTotalDuration)}</span>
+                </span>
+              </button>
+            </div>
+            <button className="cancel-nav-btn" onClick={handleClearRoute}>
+              {lang === 'az' ? 'Ləğv et' : 'Cancel'}
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {/* Phase 2: Route panel */}
       <RoutePanel
@@ -578,9 +679,10 @@ export default function Map() {
         </div>
       )}
 
-      {/* Location mode toggle button */}
-      <button
-        className={`location-mode-btn ${locationMode === 'manual-location' ? 'active' : ''} ${manualLocation ? 'has-manual' : ''}`}
+      {/* Location mode toggle button - Hidden during navigation to save space */}
+      {!route && !routeOptions && (
+        <button
+          className={`location-mode-btn ${locationMode === 'manual-location' ? 'active' : ''} ${manualLocation ? 'has-manual' : ''}`}
         id="location-mode-btn"
         onClick={() => {
           if (manualLocation) {
@@ -613,11 +715,12 @@ export default function Map() {
           </>
         )}
       </button>
+      )}
 
       {/* Phase nav buttons (for demo/testing) */}
       {route && (
         <div className="phase-nav" id="phase-nav">
-          {[1, 2, 3, 4].map(p => (
+          {(route.walkOnly ? [1] : [1, 2, 3, 4]).map(p => (
             <button
               key={p}
               className={`phase-nav-btn ${phase === p ? 'active' : ''}`}

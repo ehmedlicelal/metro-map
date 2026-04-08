@@ -28,7 +28,7 @@
   --shadow-lg: 0 18px 48px rgba(15, 23, 42, 0.14);
   --shadow-xl: 0 28px 72px rgba(15, 23, 42, 0.2);
   --surface-hover: rgba(17, 24, 39, 0.04);
-  --tile-filter: none;
+  --tile-filter: brightness(0.93) contrast(1.08) saturate(1.15);
   --map-glow-top: radial-gradient(circle at top left, rgba(66, 133, 244, 0.16), transparent 38%);
   --map-glow-bottom: linear-gradient(180deg, rgba(238, 243, 249, 0) 0%, rgba(238, 243, 249, 0.78) 100%);
   --radius-sm: 8px;
@@ -137,6 +137,41 @@ body,
 .place-marker {
   background: none !important;
   border: none !important;
+}
+
+/* ═══════════════════════════════════════
+   LEAFLET OVERRIDES (Typography)
+   ═══════════════════════════════════════ */
+.leaflet-tooltip,
+.leaflet-popup-content {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+}
+
+.station-label,
+.place-label {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 6px 10px !important;
+  text-shadow: 0px 0px 3px rgba(255,255,255,0.8);
+}
+
+[data-theme='dark'] .station-label,
+[data-theme='dark'] .place-label {
+  text-shadow: 0px 0px 3px rgba(0,0,0,0.8);
+}
+
+.station-popup-content strong {
+  font-size: 16px !important;
+}
+
+.station-popup-content .exit-count {
+  font-size: 13px !important;
 }
 
 /* ═══════════════════════════════════════
@@ -582,12 +617,33 @@ body,
   transform: translateY(0);
 }
 
+.route-panel.collapsed {
+  transform: translateY(calc(100% - 40px));
+}
+
+.panel-handle-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  padding: 8px 0;
+  margin: -8px 0 8px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+  transition: opacity 0.2s ease;
+}
+
+.panel-handle-btn:hover {
+  opacity: 0.7;
+}
+
 .panel-handle {
   width: 36px;
   height: 4px;
   background: var(--text-muted);
   border-radius: 2px;
-  margin: 0 auto 16px;
 }
 
 .panel-header {
@@ -683,17 +739,38 @@ body,
   color: var(--text-primary);
 }
 
-.panel-counter {
+.door-side-hint {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--accent-yellow-soft);
+  border-radius: var(--radius-md);
   margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.counter-badge {
+.door-icon {
+  font-size: 16px;
+}
+
+.panel-metrics {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.counter-badge,
+.eta-badge {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
+  padding: 8px 16px;
   background: var(--bg-glass);
   border-radius: var(--radius-xl);
 }
@@ -706,6 +783,23 @@ body,
 }
 
 .counter-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.eta-icon {
+  font-size: 18px;
+}
+
+.eta-time {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.eta-label {
   font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
@@ -808,6 +902,11 @@ body,
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   max-width: 480px;
   margin: 0 auto;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.exit-card.collapsed {
+  transform: translateY(calc(100% - 16px));
 }
 
 .exit-card-header {
@@ -1260,7 +1359,8 @@ body,
   .search-bar {
     top: 12px;
     left: 12px;
-    right: 62px;
+    right: 58px;
+    width: auto;
   }
 
   .search-input-wrapper {
@@ -1283,9 +1383,38 @@ body,
     font-size: 24px;
   }
 
+  /* Compact Phase Indicator for mobile screens */
   .phase-indicator {
-    top: 68px;
-    padding: 6px 10px;
+    top: 70px;
+    width: calc(100vw - 24px);
+    max-width: 100%;
+    padding: 6px 8px;
+    justify-content: space-between;
+  }
+
+  .phase-badge {
+    padding: 4px;
+  }
+
+  .phase-connector {
+    width: 12px;
+    margin: 0;
+  }
+
+  .phase-label {
+    font-size: 9px;
+  }
+
+  /* Move Location Mode button up to prevent covering bottom cards */
+  .location-mode-btn {
+    bottom: 120px;
+    left: 12px;
+    padding: 8px 14px;
+    height: 40px;
+  }
+
+  .loc-btn-text {
+    font-size: 12px;
   }
 
   .walk-card {
@@ -1299,17 +1428,32 @@ body,
     bottom: 16px;
     left: 12px;
     right: 12px;
-    padding: 20px;
+    padding: 16px;
+  }
+
+  .exit-card.collapsed {
+    transform: translateY(calc(100% - 24px));
+  }
+
+  .route-panel {
+    padding: 12px 16px 20px;
+    max-width: 100vw;
   }
 
   .phase-nav {
-    bottom: 16px;
+    bottom: auto;
+    top: 124px;
     right: 12px;
+    flex-direction: column;
   }
 
   .phase-nav-btn {
     width: 32px;
     height: 32px;
     font-size: 11px;
+  }
+
+  .exit-card-header {
+    flex-wrap: wrap;
   }
 }

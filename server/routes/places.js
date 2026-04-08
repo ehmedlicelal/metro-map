@@ -8,6 +8,21 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 // Baku bounding box (slightly generous)
 const BAKU_VIEWBOX = '49.65,40.58,50.20,40.28';
 
+const CUSTOM_PLACES = [
+  {
+    name: "Holberton School Azerbaijan (Gənclik Plaza), 89 Ataturk avenue, Baku 1000",
+    lat: 40.4060470,
+    lon: 49.8483572,
+    keywords: ["holberton", "gənclik plaza", "genclik plaza", "ataturk 89", "atatürk 89"]
+  },
+  {
+    name: "Innovation and Digital Development Agency (IDDA; MyGov), 89 Ataturk avenue, Baku 1069",
+    lat: 40.4060470,
+    lon: 49.8483572,
+    keywords: ["idda", "mygov", "my gov", "innovation", "digital development", "ataturk 89", "atatürk 89"]
+  }
+];
+
 /**
  * Helper: call Nominatim with given params
  */
@@ -104,6 +119,15 @@ router.get('/', async (req, res) => {
       lat: parseFloat(place.lat),
       lon: parseFloat(place.lon)
     }));
+
+    // Inject custom places if matched
+    CUSTOM_PLACES.forEach(cp => {
+      if (cp.keywords.some(k => query.includes(k))) {
+        if (!places.some(p => p.name === cp.name)) {
+          places.unshift({ name: cp.name, lat: cp.lat, lon: cp.lon });
+        }
+      }
+    });
 
     // Store in cache
     cache.set(query, { data: places, timestamp: Date.now() });

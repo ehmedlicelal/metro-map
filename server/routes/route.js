@@ -73,12 +73,28 @@ router.post('/', (req, res) => {
     // 5. Recommend best exit at destination station
     const bestExit = recommendExit(exitStation.exits, destLatFinal, destLngFinal);
 
-    // 5. Calculate turn direction
+    // 6. Calculate turn direction
     let turnDirection = null;
     if (route.path.length >= 2 && bestExit) {
       const prevStationId = route.path[route.path.length - 2];
       const prevStation = stations.find(s => s.id === prevStationId);
-      if (prevStation) {
+      
+      if (exitStation.id === 'nizami') {
+        // Special case for Nizami station
+        if (prevStationId === 'elmler-akademiyasi') {
+          // Coming from Darnagul direction
+          turnDirection = {
+            direction_az: 'SAĞA',
+            direction_en: 'RIGHT'
+          };
+        } else if (prevStationId === '28-may') {
+          // Coming from Hazi Aslanov / 28-May direction
+          turnDirection = {
+            direction_az: 'SOLA',
+            direction_en: 'LEFT'
+          };
+        }
+      } else if (prevStation) {
         turnDirection = getTurnDirection(
           prevStation.center_lat, prevStation.center_lng,
           exitStation.center_lat, exitStation.center_lng,

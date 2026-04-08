@@ -40,7 +40,7 @@ export async function searchPlaces(query) {
  * Get walking route from OSRM (free, no API key)
  */
 export async function fetchWalkingRoute(fromLat, fromLng, toLat, toLng) {
-  const url = `https://router.project-osrm.org/route/v1/walking/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+  const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
   const res = await fetch(url);
   if (!res.ok) return null;
   const data = await res.json();

@@ -19,10 +19,16 @@ const PHASES = {
   ]
 };
 
-export default function PhaseIndicator({ phase, lang }) {
+export default function PhaseIndicator({ phase, lang, isWalkOnly }) {
   if (phase === 0) return null;
 
-  const phases = PHASES[lang] || PHASES.en;
+  let phases = PHASES[lang] || PHASES.en;
+
+  if (isWalkOnly) {
+    phases = [
+      { id: 1, icon: '🚶', label: lang === 'az' ? 'Piyada' : 'Walk', desc: lang === 'az' ? 'Təyinata doğru' : 'To destination' }
+    ];
+  }
 
   return (
     <div className="phase-indicator" id="phase-indicator">
