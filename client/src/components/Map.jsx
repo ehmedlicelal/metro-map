@@ -465,25 +465,6 @@ export default function Map() {
         <LanguageToggle lang={lang} onToggle={toggleLang} />
       </div>
 
-      {showWelcomeCard && (
-        <div className="welcome-card" id="welcome-card">
-          <div className="welcome-card-header">
-            <span className="welcome-eyebrow">Baku Metro Navigator</span>
-            <span className={`welcome-status ${geoError ? 'warning' : 'ready'}`}>
-              {locationStatusLabel}
-            </span>
-          </div>
-          <h1 className="welcome-title">
-            {lang === 'az' ? 'Marşrutunuzu daha rahat planlayın' : 'Plan your route with less friction'}
-          </h1>
-          <p className="welcome-description">
-            {lang === 'az'
-              ? 'Yeri axtarın və ya xəritəyə toxunun — ən yaxın giriş, metro xətti və çıxış tövsiyələrini görün.'
-              : 'Search for a place or tap the map to see the best entry, metro line, and exit guidance.'}
-          </p>
-        </div>
-      )}
-
       {/* Phase Indicator */}
       <PhaseIndicator phase={phase} lang={lang} />
 

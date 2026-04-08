@@ -10,7 +10,7 @@ const placesRouter = require('./routes/places');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({ origin: ["https://metro-map.vercel.app", "http://localhost:5173", "http://localhost:3000"] }));
 app.use(express.json());
 
 // API Routes

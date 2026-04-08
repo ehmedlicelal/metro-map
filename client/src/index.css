@@ -67,7 +67,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -329,27 +331,6 @@ html, body, #root {
   font-weight: 700;
 }
 
-.welcome-card {
-  position: absolute;
-  top: 84px;
-  left: 16px;
-  z-index: 1000;
-  width: min(360px, calc(100% - 32px));
-  padding: 18px 18px 20px;
-  background: linear-gradient(160deg, var(--bg-card), var(--bg-glass));
-  backdrop-filter: blur(24px);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-}
-
-.welcome-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
 
 .welcome-eyebrow {
   font-size: 11px;
@@ -1212,8 +1193,15 @@ html, body, #root {
 }
 
 @keyframes pulse-border {
-  0%, 100% { box-shadow: var(--shadow-lg), 0 0 0 0 rgba(66, 133, 244, 0.4); }
-  50% { box-shadow: var(--shadow-lg), 0 0 0 6px rgba(66, 133, 244, 0); }
+
+  0%,
+  100% {
+    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(66, 133, 244, 0.4);
+  }
+
+  50% {
+    box-shadow: var(--shadow-lg), 0 0 0 6px rgba(66, 133, 244, 0);
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1221,7 +1209,9 @@ html, body, #root {
    ═══════════════════════════════════════ */
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes slideUp {
@@ -1229,6 +1219,7 @@ html, body, #root {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1240,6 +1231,7 @@ html, body, #root {
     transform: translateY(-20px) translateX(-50%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0) translateX(-50%);
     opacity: 1;
@@ -1247,8 +1239,17 @@ html, body, #root {
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.15); opacity: 0.7; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 0.7;
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1276,18 +1277,6 @@ html, body, #root {
   .language-toggle {
     height: 46px;
     padding: 8px 10px;
-  }
-
-  .welcome-card {
-    top: 72px;
-    left: 12px;
-    width: calc(100% - 24px);
-    padding: 16px;
-  }
-
-  .welcome-card-header {
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   .welcome-title {
