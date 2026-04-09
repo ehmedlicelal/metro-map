@@ -16,11 +16,11 @@ function bearing(a, b) {
 
 /** Arrow chevron SVG marker rotated to direction */
 function createArrowIcon(deg, color) {
-  const size = 22;
+  const size = 18;
   return L.divIcon({
     html: `<div style="transform:rotate(${deg}deg);width:${size}px;height:${size}px">
       <svg width="${size}" height="${size}" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="11,2 20,18 11,13 2,18" fill="${color}" fill-opacity="0.88" stroke="white" stroke-width="1.5"/>
+        <polygon points="11,2 20,18 11,13 2,18" fill="${color}" fill-opacity="0.85" stroke="white" stroke-width="1"/>
       </svg>
     </div>`,
     className: '',
@@ -30,7 +30,7 @@ function createArrowIcon(deg, color) {
 }
 
 /** Sample arrow positions every ~`step` metres along coords */
-function sampleArrows(coords, step = 55) {
+function sampleArrows(coords, step = 85) {
   if (coords.length < 2) return [];
   const arrows = [];
   let acc = 0;
@@ -74,13 +74,13 @@ function WalkLine({ keyPrefix, coords, fallbackA, fallbackB, color, opacity = 0.
   const pts = coords.length >= 2 ? coords : (fallbackA && fallbackB ? [fallbackA, fallbackB] : []);
   if (pts.length < 2) return null;
 
-  const arrows = sampleArrows(pts, 55);
+  const arrows = sampleArrows(pts, 85);
   return (
     <>
       <Polyline
         key={`${keyPrefix}-line`}
         positions={pts}
-        pathOptions={{ color, weight: 5, opacity, dashArray: '10,8', lineCap: 'round' }}
+        pathOptions={{ color, weight: 5, opacity, dashArray: '1, 15', lineCap: 'round' }}
       />
       {arrows.map((a, i) => (
         <Marker
@@ -117,7 +117,7 @@ export default function RoutePolylines({ phase, route, walkingRoute, postMetroRo
         coords={coords}
         fallbackA={fb1}
         fallbackB={fb2}
-        color="#4ecca3"
+        color="#4285F4"
       />
     );
   }
@@ -190,7 +190,7 @@ export default function RoutePolylines({ phase, route, walkingRoute, postMetroRo
       <Polyline
         key="exit-arc"
         positions={arc}
-        pathOptions={{ color: '#fbbf24', weight: 4, opacity: 0.85, dashArray: '8,6', lineCap: 'round' }}
+        pathOptions={{ color: '#fbbf24', weight: 4, opacity: 0.85, dashArray: '1, 12', lineCap: 'round' }}
       />
     );
     for (let i = 1; i < arc.length; i++) {
@@ -229,7 +229,7 @@ export default function RoutePolylines({ phase, route, walkingRoute, postMetroRo
           coords={coords}
           fallbackA={fbA}
           fallbackB={fbB}
-          color="#4ecca3"
+          color="#4285F4"
           opacity={opacity}
         />
       );

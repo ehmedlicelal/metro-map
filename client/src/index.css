@@ -1452,169 +1452,219 @@ body.page--landing {
    ═══════════════════════════════════════ */
 
 @media (max-width: 480px) {
+  /* --- Global Mobile Layout --- */
   .search-container {
-    top: 12px;
-    left: 64px;
-    right: 12px;
+    top: 10px;
+    left: 10px;
+    right: 10px;
     width: auto;
     max-width: none;
+    gap: 6px;
   }
 
-  .search-bar {
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
+  /* Compact Home Button inside search-bar layout */
+  .map-home-btn {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 42px;
+    height: 42px;
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid var(--border-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1005;
+    box-shadow: var(--shadow-md);
+    padding: 0;
+  }
+
+  .map-home-text {
+    display: none;
   }
 
   .search-bar.multi-bar {
-    left: 0;
-    right: 0;
+    padding-left: 52px; /* Leave space for integrated Home button */
   }
 
   .search-input-wrapper {
-    height: 46px;
+    height: 48px;
+    padding: 0 14px;
+    border-radius: 14px;
+    background: var(--bg-card);
   }
 
+  .search-input {
+    font-size: 14px;
+  }
+
+  .search-results {
+    position: fixed;
+    top: 120px;
+    left: 10px;
+    right: 10px;
+    max-height: 50vh;
+    border-radius: 16px;
+    width: auto;
+  }
+
+  /* --- Floating Mini Controls (FAB Stack) --- */
   .top-control-stack {
-    top: 12px;
+    position: fixed !important;
+    top: auto !important;
+    bottom: 120px; /* Moves up with bottom sheets */
     right: 12px;
-    bottom: auto;
-    left: 12px;
+    left: auto;
+    width: auto;
     flex-direction: column;
-    pointer-events: none; /* Let clicks through to map */
+    gap: 12px;
     z-index: 1001;
+    pointer-events: none;
+    transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .top-control-stack > * {
-    pointer-events: auto; /* Re-enable for buttons */
+    pointer-events: auto;
   }
 
+  /* Make current map controls look like premium FABs */
   .theme-toggle,
-  .language-toggle {
-    height: 42px;
-    padding: 6px 10px;
+  .map-lang-cluster,
+  .location-mode-btn {
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
   }
 
-  /* Map controls — compact on mobile */
+  /* Only show the globe/more button on mobile to preserve FAB look */
+  .map-lang-cluster .map-flag-btn:not(.map-more-btn) {
+    display: none;
+  }
+
+  .map-lang-cluster .map-more-btn {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .theme-toggle-text,
+  .loc-btn-text,
+  .map-more-name {
+    display: none;
+  }
+
+  .theme-toggle-icon,
   .map-flag-btn,
-  .map-globe-btn {
+  .loc-btn-icon {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .map-lang-cluster .map-more-panel {
+    bottom: 0;
+    right: 54px;
+    top: auto;
+    width: 180px;
+    animation: slideInFromRight 0.2s ease-out;
+  }
+
+  /* --- Phase Indicator (Mobile Hook) --- */
+  .phase-indicator {
+    top: auto;
+    bottom: 16px; /* Above bottom sheet if needed */
+    left: 10px;
+    right: 10px;
+    width: auto;
+    transform: none;
+    padding: 10px;
+    border-radius: 20px;
+    justify-content: space-between;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Conditional positioning based on active sheets */
+  body:has(.walk-card) .top-control-stack,
+  body:has(.exit-card) .top-control-stack,
+  body:has(.route-panel.visible:not(.collapsed)) .top-control-stack {
+    bottom: 190px;
+  }
+
+  body:has(.walk-card) .phase-indicator,
+  body:has(.exit-card) .phase-indicator,
+  body:has(.route-panel.visible:not(.collapsed)) .phase-indicator {
+    bottom: 110px;
+  }
+
+  .phase-badge {
+    padding: 2px 8px;
+    gap: 1px;
+    flex: 1;
+  }
+
+  .phase-icon {
+    font-size: 16px;
+  }
+
+  .phase-label {
+    font-size: 7px;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  /* --- Cards & Panels --- */
+  .walk-card,
+  .exit-card,
+  .route-panel {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto !important;
+    max-width: none !important;
+    border-radius: 24px;
+    padding: 18px;
+  }
+
+  .route-panel {
+    border-radius: 24px 24px 0 0;
+    bottom: 0px;
+    left: 0;
+    right: 0;
+    padding: 10px 16px 24px;
+  }
+
+  .walk-card-icon {
     width: 42px;
     height: 42px;
     font-size: 20px;
   }
 
-  .map-home-btn {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .start-nav-btn {
+    padding: 10px 16px;
+    font-size: 12px;
     border-radius: 12px;
   }
 
-  /* Other controls in stack go to bottom-right instead of top-right */
-  .theme-toggle,
-  .map-lang-cluster,
-  .location-mode-btn {
-    position: fixed;
-    right: 12px;
-  }
-
-  .theme-toggle { bottom: 260px; }
-  .map-lang-cluster { bottom: 210px; }
-  .location-mode-btn { bottom: 160px; }
-
-  /* icon-only on very small screens */
-
-  /* Dropdown opens to the LEFT on mobile to avoid right-edge overflow */
-  .map-more-panel {
-    right: auto;
-    left: 0;
-    width: 220px;
-  }
-
-  .welcome-title {
-    font-size: 24px;
-  }
-
-  /* Compact Phase Indicator for mobile screens */
-  .phase-indicator {
-    top: auto;
-    bottom: 110px; /* Above the walk/exit cards */
-    left: 12px;
-    right: 12px;
-    width: auto;
-    transform: none;
-    max-width: 100%;
-    padding: 8px 12px;
-    justify-content: space-between;
-    border-radius: var(--radius-lg);
-  }
-
-  .phase-badge {
-    padding: 4px;
-  }
-
-  .phase-connector {
-    width: 12px;
-    margin: 0;
-  }
-
-  .phase-label {
-    font-size: 9px;
-  }
-
-  .location-mode-btn {
-    height: 42px;
-    padding: 6px 10px;
-    border-radius: 10px;
-    min-width: 42px;
-  }
-
-  .loc-btn-text {
-    display: none;
-  }
-
-  .loc-btn-text {
-    font-size: 12px;
-  }
-
-  .walk-card {
-    bottom: 16px;
-    left: 12px;
-    right: 12px;
-    padding: 16px;
-  }
-
-  .exit-card {
-    bottom: 16px;
-    left: 12px;
-    right: 12px;
-    padding: 16px;
-  }
-
-  .exit-card.collapsed {
-    transform: translateY(calc(100% - 24px));
-  }
-
-  .route-panel {
-    padding: 12px 16px 20px;
-    max-width: 100vw;
-  }
-
-  .phase-nav {
-    display: none !important; /* Hide debug nav on mobile */
-  }
-
-  .exit-card-header {
-    flex-wrap: wrap;
+  /* Map labels reduction */
+  .station-label {
+    font-size: 9px !important;
+    padding: 2px 5px !important;
+    max-width: 60px;
   }
 }
+
 
 /* ═══════════════════════════════════════════════════════════════
    MAP LANGUAGE CLUSTER + BACK TO HOME BUTTON
@@ -1790,3 +1840,117 @@ body.page--landing {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ROUTE OPTIONS DIALOUGE (WALK VS METRO)
+   ═══════════════════════════════════════════════════════════════ */
+.route-options-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.route-options-card {
+  background: var(--bg-card);
+  width: 100%;
+  max-width: 400px;
+  border-radius: 28px;
+  padding: 30px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+}
+
+.route-options-card h3 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.options-subtitle {
+  color: #c0392b;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.options-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 2px solid var(--border-color);
+  background: var(--surface-hover);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.option-btn:hover {
+  border-color: var(--accent-blue);
+  background: var(--bg-glass);
+}
+
+.option-btn .icon {
+  font-size: 28px;
+}
+
+.option-btn .details {
+  display: flex;
+  flex-direction: column;
+}
+
+.option-btn .mode {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.option-btn .time {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.cancel-nav-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.cancel-nav-btn:hover {
+  color: var(--text-primary);
+}
+
+@media (max-width: 480px) {
+  .route-options-card {
+    padding: 24px;
+    border-radius: 24px;
+  }
+  
+  .option-btn {
+    padding: 16px;
+  }
+}
