@@ -42,14 +42,40 @@ async function searchNominatim(params) {
 }
 
 /**
- * GET /api/places?q=<search term>
- *
- * Searches OpenStreetMap Nominatim for places in Baku, Azerbaijan.
- * Uses a two-pass strategy:
- *   1) Strict bounding box around Baku
- *   2) If no results, fall back to country-wide with viewbox preference
- * Returns simplified format: [{ name, lat, lon }]
- * Results are cached in memory to avoid repeated API calls.
+ * @swagger
+ * /api/places:
+ *   get:
+ *     summary: Search for places in Baku
+ *     description: Searches OpenStreetMap Nominatim for places in Baku, Azerbaijan, with local caching.
+ *     tags: [Places]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *           minLength: 2
+ *         required: true
+ *         description: Search term (e.g., "Park Bulvar", "Port Baku")
+ *     responses:
+ *       200:
+ *         description: A list ofMatching places
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   lat:
+ *                     type: number
+ *                   lon:
+ *                     type: number
+ *       400:
+ *         description: Invalid query parameter
+ *       500:
+ *         description: Failed to search places
  */
 router.get('/', async (req, res) => {
   try {

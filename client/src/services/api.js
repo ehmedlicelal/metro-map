@@ -37,19 +37,37 @@ export async function searchPlaces(query) {
 }
 
 /**
- * Get walking route from OSRM (free, no API key)
+ * Compute a straight-line walking route between two points.
+ * Uses the Haversine formula for distance and 5 km/h average walking speed.
+ * This avoids unreliable OSRM pedestrian data in Baku which causes weird detours.
+ * The straight-line geometry matches how transit apps (Google Maps, etc.) display
+ * walking segments between transit stops.
+ * The `signal` parameter is accepted for API compatibility but unused.
  */
-export async function fetchWalkingRoute(fromLat, fromLng, toLat, toLng) {
-  const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  const data = await res.json();
-  if (data.routes && data.routes.length > 0) {
-    return {
-      geometry: data.routes[0].geometry,
-      distance: data.routes[0].distance,
-      duration: data.routes[0].duration
-    };
-  }
-  return null;
+export async function fetchWalkingRoute(fromLat, fromLng, toLat, toLng, _signal) {
+  // Haversine distance in metres
+  const R = 6371000;
+  const φ1 = (fromLat * Math.PI) / 180;
+  const φ2 = (toLat * Math.PI) / 180;
+  const Δφ = ((toLat - fromLat) * Math.PI) / 180;
+  const Δλ = ((toLng - fromLng) * Math.PI) / 180;
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  // Realistic walking: ~5 km/h but add 30% for road detours (even for straight-line display)
+  const duration = (distance / 1000 / 5) * 3600 * 1.3;
+
+  return {
+    geometry: {
+      type: 'LineString',
+      coordinates: [
+        [fromLng, fromLat],
+        [toLng, toLat],
+      ],
+    },
+    distance,
+    duration,
+  };
 }

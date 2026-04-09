@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { t } from '../i18n/translations';
 
 /**
  * Exit instruction card — prominent floating card at bottom of screen.
  * Shown during Phase 3 (Exiting the Station).
+ * Supports 30+ languages via translations system.
  */
 export default function ExitCard({ route, phase, lang }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -13,39 +15,30 @@ export default function ExitCard({ route, phase, lang }) {
   const { exit } = route;
   if (!exit?.recommendedExit) return null;
 
+  const tr = t(lang);
   const { recommendedExit, turnDirection, station } = exit;
   const exitNumber = recommendedExit.label?.replace(/\D/g, '') || '?';
 
-  // Touch handlers for swipe
-  const handleTouchStart = (e) => {
-    setTouchStartY(e.touches[0].clientY);
-  };
-
+  const handleTouchStart = (e) => { setTouchStartY(e.touches[0].clientY); };
   const handleTouchEnd = (e) => {
     if (touchStartY === null) return;
-    const touchEndY = e.changedTouches[0].clientY;
-    const distance = touchEndY - touchStartY;
-    
-    // Swipe threshold
-    if (distance > 40) {
-      setIsCollapsed(true);
-    } else if (distance < -40) {
-      setIsCollapsed(false);
-    }
+    const distance = e.changedTouches[0].clientY - touchStartY;
+    if (distance > 40) setIsCollapsed(true);
+    else if (distance < -40) setIsCollapsed(false);
     setTouchStartY(null);
   };
 
   return (
-    <div 
-      className={`exit-card ${isCollapsed ? 'collapsed' : ''}`} 
+    <div
+      className={`exit-card ${isCollapsed ? 'collapsed' : ''}`}
       id="exit-card"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <button 
-        className="panel-handle-btn" 
+      <button
+        className="panel-handle-btn"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        aria-label={isCollapsed ? "Expand exit details" : "Collapse exit details"}
+        aria-label={isCollapsed ? 'Expand exit details' : 'Collapse exit details'}
       >
         <div className="panel-handle" />
       </button>
@@ -55,25 +48,34 @@ export default function ExitCard({ route, phase, lang }) {
           <span className="exit-card-icon">🚪</span>
           <div className="exit-card-title">
             <span className="exit-card-az">
-              {recommendedExit.label}-dən çıxmalısınız
-            </span>
-            <span className="exit-card-en">
-              Exit from {recommendedExit.label}
+              {tr.exitFrom(recommendedExit.label)}
             </span>
           </div>
-          <div className="exit-number-badge">{exitNumber}</div>
         </div>
 
         {turnDirection && (
-          <div className="exit-card-direction">
-            <span className="direction-icon">🧭</span>
-            <div className="direction-text">
-              <span className="direction-az">
-                Qatardan düşdükdən sonra <strong>{turnDirection.direction_az}</strong> dönün
-              </span>
-              <span className="direction-en">
-                Turn <strong>{turnDirection.direction_en}</strong> after turnstiles
-              </span>
+          <div className="exit-card-directions">
+            {/* Step 1: Platform — which way to walk from the train car to the exit door */}
+            {turnDirection.platform_en && (
+              <div className="exit-card-direction exit-direction-platform">
+                <span className="direction-step">1</span>
+                <span className="direction-icon">🚃</span>
+                <div className="direction-text">
+                  <span className="direction-en">
+                    {tr.turnAfterTrain(turnDirection.platform_en)}
+                  </span>
+                </div>
+              </div>
+            )}
+            {/* Step 2: Street — which way to turn after the turnstile / exit door */}
+            <div className="exit-card-direction exit-direction-street">
+              <span className="direction-step">2</span>
+              <span className="direction-icon">🧭</span>
+              <div className="direction-text">
+                <span className="direction-en">
+                  {tr.turnAfter(turnDirection.direction_en)}
+                </span>
+              </div>
             </div>
           </div>
         )}
@@ -88,9 +90,7 @@ export default function ExitCard({ route, phase, lang }) {
             <span className="distance-value">
               {Math.round(recommendedExit.distance)}m
             </span>
-            <span className="distance-label">
-              {lang === 'az' ? 'təyinata qədər' : 'to destination'}
-            </span>
+            <span className="distance-label">{tr.toDestination}</span>
           </div>
         )}
       </div>

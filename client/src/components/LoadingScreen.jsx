@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import './LoadingScreen.css';
 
-export default function LoadingScreen({ onComplete }) {
+export default function LoadingScreen({ onComplete, persistent = false, onCancel = null, message = null }) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    if (persistent) return; // Wait for manual trigger
+
     // Show the loading screen for 2 seconds
     const timer = setTimeout(() => {
       setIsVisible(false);
@@ -12,7 +14,7 @@ export default function LoadingScreen({ onComplete }) {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, [onComplete, persistent]);
 
   return (
     <div className={`loading-screen ${!isVisible ? 'fade-out' : ''}`}>
@@ -51,6 +53,32 @@ export default function LoadingScreen({ onComplete }) {
             <circle cx="65" cy="52" r="4.5" fill="#d9242d" />
           </g>
         </svg>
+
+        {message && (
+          <div className="loading-message" style={{ color: 'white', marginTop: '20px', fontWeight: 'bold', fontSize: '1.1rem', textAlign: 'center' }}>
+            {message}
+          </div>
+        )}
+
+        {onCancel && (
+          <button 
+            className="loading-cancel-btn" 
+            onClick={onCancel}
+            style={{
+              marginTop: '30px',
+              padding: '10px 20px',
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              borderRadius: '20px',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              backdropFilter: 'blur(5px)'
+            }}
+          >
+            Cancel & Enter Manually
+          </button>
+        )}
       </div>
     </div>
   );

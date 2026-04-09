@@ -1,5 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* Remove Leaflet's default white box from custom div icons (arrow markers etc.) */
+.leaflet-div-icon {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
 /* ═══════════════════════════════════════════════════════════════
    BAKU METRO NAVIGATOR — Global Styles
    Theme-aware, mobile-first map interface
@@ -72,12 +80,21 @@ body,
 #root {
   width: 100%;
   height: 100%;
-  overflow: hidden;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Map page: lock scroll */
+body.page--map {
+  overflow: hidden;
+}
+
+/* Landing page: allow natural scroll */
+body.page--landing {
+  overflow: auto;
 }
 
 /* ═══════════════════════════════════════
@@ -158,12 +175,12 @@ body,
   border-radius: var(--radius-sm) !important;
   box-shadow: var(--shadow-md) !important;
   padding: 6px 10px !important;
-  text-shadow: 0px 0px 3px rgba(255,255,255,0.8);
+  text-shadow: 0px 0px 3px rgba(255, 255, 255, 0.8);
 }
 
 [data-theme='dark'] .station-label,
 [data-theme='dark'] .place-label {
-  text-shadow: 0px 0px 3px rgba(0,0,0,0.8);
+  text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.8);
 }
 
 .station-popup-content strong {
@@ -178,13 +195,29 @@ body,
    SEARCH BAR — Floating top overlay
    ═══════════════════════════════════════ */
 
-.search-bar {
+.search-container {
   position: absolute;
   top: 16px;
   left: 16px;
   right: 88px;
   z-index: 1000;
   max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.search-bar {
+  position: relative;
+  width: 100%;
+}
+
+.search-bar.multi-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
 }
 
 .search-input-wrapper {
@@ -199,11 +232,52 @@ body,
   height: 52px;
   box-shadow: var(--shadow-lg);
   transition: var(--transition);
+  position: relative;
 }
 
-.search-input-wrapper:focus-within {
-  border-color: var(--accent-blue);
-  box-shadow: var(--shadow-lg), 0 0 0 2px rgba(66, 133, 244, 0.2);
+.search-input-wrapper.active-pick {
+  border-color: var(--accent-red);
+  box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.4);
+  animation: pulse-border 1.5s infinite;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0px rgba(233, 69, 96, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(233, 69, 96, 0); }
+  100% { box-shadow: 0 0 0 0px rgba(233, 69, 96, 0); }
+}
+
+.map-pick-btn {
+  background: var(--surface-hover);
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-left: 4px;
+  font-size: 16px;
+}
+
+.map-pick-btn:hover {
+  background: var(--accent-blue-soft);
+  transform: scale(1.05);
+}
+
+.map-pick-btn.active {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+.origin-wrapper .search-icon {
+  color: var(--accent-red);
+}
+
+.dest-wrapper .search-icon {
+  color: var(--accent-blue);
 }
 
 .search-icon {
@@ -243,6 +317,42 @@ body,
   background: rgba(255, 255, 255, 0.1);
 }
 
+.search-clear-all {
+  position: absolute;
+  right: -32px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+  z-index: 10;
+}
+
+.search-clear-all:hover {
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+  background: var(--accent-red-soft);
+}
+
+@media (max-width: 480px) {
+  .search-clear-all {
+    right: 8px; /* Move inside on mobile if needed or just keep it accessible */
+    background: var(--accent-red-soft);
+    color: var(--accent-red);
+    border: none;
+  }
+}
+
 .search-spinner {
   width: 18px;
   height: 18px;
@@ -260,11 +370,13 @@ body,
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  margin-top: 8px;
+  margin-top: 4px;
   max-height: 320px;
   overflow-y: auto;
   box-shadow: var(--shadow-xl);
   animation: slideDown 0.2s ease-out;
+  pointer-events: auto;
+  z-index: 1005;
 }
 
 .search-result-item {
@@ -739,20 +851,6 @@ body,
   color: var(--text-primary);
 }
 
-.door-side-hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--accent-yellow-soft);
-  border-radius: var(--radius-md);
-  margin-bottom: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
 .door-icon {
   font-size: 16px;
 }
@@ -1174,7 +1272,8 @@ body,
 
 .phase-nav {
   position: absolute;
-  bottom: 24px;
+  top: 50%;
+  transform: translateY(-50%);
   right: 16px;
   z-index: 1001;
   display: flex;
@@ -1240,26 +1339,23 @@ body,
   color: var(--text-primary);
 }
 
-/* Location mode toggle button — bottom-left */
 .location-mode-btn {
-  position: absolute;
-  bottom: 32px;
-  left: 16px;
-  z-index: 1000;
-  background: var(--bg-card);
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-glass));
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   box-shadow: var(--shadow-lg);
   transition: var(--transition);
-  height: 44px;
+  height: 52px;
   color: var(--text-primary);
+  min-width: 52px;
+  z-index: 1000;
 }
 
 .location-mode-btn:hover {
@@ -1356,11 +1452,24 @@ body,
    ═══════════════════════════════════════ */
 
 @media (max-width: 480px) {
-  .search-bar {
+  .search-container {
     top: 12px;
-    left: 12px;
-    right: 58px;
+    left: 64px;
+    right: 12px;
     width: auto;
+    max-width: none;
+  }
+
+  .search-bar {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  .search-bar.multi-bar {
+    left: 0;
+    right: 0;
   }
 
   .search-input-wrapper {
@@ -1370,13 +1479,63 @@ body,
   .top-control-stack {
     top: 12px;
     right: 12px;
-    gap: 8px;
+    bottom: auto;
+    left: 12px;
+    flex-direction: column;
+    pointer-events: none; /* Let clicks through to map */
+    z-index: 1001;
+  }
+
+  .top-control-stack > * {
+    pointer-events: auto; /* Re-enable for buttons */
   }
 
   .theme-toggle,
   .language-toggle {
-    height: 46px;
-    padding: 8px 10px;
+    height: 42px;
+    padding: 6px 10px;
+  }
+
+  /* Map controls — compact on mobile */
+  .map-flag-btn,
+  .map-globe-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+  }
+
+  .map-home-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+  }
+
+  /* Other controls in stack go to bottom-right instead of top-right */
+  .theme-toggle,
+  .map-lang-cluster,
+  .location-mode-btn {
+    position: fixed;
+    right: 12px;
+  }
+
+  .theme-toggle { bottom: 260px; }
+  .map-lang-cluster { bottom: 210px; }
+  .location-mode-btn { bottom: 160px; }
+
+  /* icon-only on very small screens */
+
+  /* Dropdown opens to the LEFT on mobile to avoid right-edge overflow */
+  .map-more-panel {
+    right: auto;
+    left: 0;
+    width: 220px;
   }
 
   .welcome-title {
@@ -1385,11 +1544,16 @@ body,
 
   /* Compact Phase Indicator for mobile screens */
   .phase-indicator {
-    top: 70px;
-    width: calc(100vw - 24px);
+    top: auto;
+    bottom: 110px; /* Above the walk/exit cards */
+    left: 12px;
+    right: 12px;
+    width: auto;
+    transform: none;
     max-width: 100%;
-    padding: 6px 8px;
+    padding: 8px 12px;
     justify-content: space-between;
+    border-radius: var(--radius-lg);
   }
 
   .phase-badge {
@@ -1405,12 +1569,15 @@ body,
     font-size: 9px;
   }
 
-  /* Move Location Mode button up to prevent covering bottom cards */
   .location-mode-btn {
-    bottom: 120px;
-    left: 12px;
-    padding: 8px 14px;
-    height: 40px;
+    height: 42px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    min-width: 42px;
+  }
+
+  .loc-btn-text {
+    display: none;
   }
 
   .loc-btn-text {
@@ -1441,19 +1608,185 @@ body,
   }
 
   .phase-nav {
-    bottom: auto;
-    top: 124px;
-    right: 12px;
-    flex-direction: column;
-  }
-
-  .phase-nav-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 11px;
+    display: none !important; /* Hide debug nav on mobile */
   }
 
   .exit-card-header {
     flex-wrap: wrap;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAP LANGUAGE CLUSTER + BACK TO HOME BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+.map-lang-cluster {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.map-flag-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: var(--bg-glass);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  backdrop-filter: blur(8px);
+  color: var(--text-primary);
+  padding: 0;
+}
+
+.map-flag-btn:hover {
+  background: var(--surface-hover);
+  transform: scale(1.06);
+}
+
+.map-flag-btn--active {
+  border-color: #c0392b;
+  background: rgba(192, 57, 43, 0.12);
+  box-shadow: 0 2px 10px rgba(192, 57, 43, 0.25);
+}
+
+.map-flag-btn--text {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.map-flag-btn--text.map-flag-btn--active {
+  color: #c0392b;
+}
+
+.map-more-wrap {
+  position: relative;
+}
+
+.map-more-btn {
+  font-size: 16px;
+}
+
+.map-more-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: var(--bg-card);
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  padding: 14px;
+  z-index: 600;
+  animation: mapPanelIn 0.18s ease-out;
+  backdrop-filter: blur(20px);
+}
+
+@keyframes mapPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.map-more-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.map-more-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.map-more-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: var(--surface-hover);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: all 0.14s ease;
+  text-align: left;
+}
+
+.map-more-item:hover {
+  background: rgba(192, 57, 43, 0.08);
+  border-color: rgba(192, 57, 43, 0.2);
+}
+
+.map-more-item--active {
+  border-color: #c0392b;
+  background: rgba(192, 57, 43, 0.1);
+  color: #c0392b;
+  font-weight: 700;
+}
+
+/* Back to Home button */
+.map-home-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-glass);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.map-home-btn:hover {
+  background: rgba(192, 57, 43, 0.1);
+  border-color: rgba(192, 57, 43, 0.35);
+  color: #c0392b;
+  transform: translateX(-2px);
+}
+
+.map-home-text {
+  letter-spacing: 0.01em;
+}
+
+/* Globe button sizing */
+.map-globe-btn {
+  font-size: 18px;
+}
+
+/* Language dropdown item internals */
+.map-more-flag {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.map-more-name {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

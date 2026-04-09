@@ -6,13 +6,61 @@ const { getTurnDirection } = require('../services/directionCalc');
 const { normalizeStations } = require('../services/normalizeStations');
 
 /**
- * POST /api/route
- * Body: { userLat, userLng, destLat, destLng, destStationId? }
- *
- * If destStationId is provided, route to that station.
- * Otherwise, find nearest station to destination and route to it.
- *
- * Returns full journey: walk → metro → exit → walk
+ * @swagger
+ * /api/route:
+ *   post:
+ *     summary: Calculate navigation route
+ *     description: Returns a full journey including walking to the nearest entry station, metro route, and walking to the final destination.
+ *     tags: [Navigation]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userLat
+ *               - userLng
+ *             properties:
+ *               userLat:
+ *                 type: number
+ *                 description: Current user latitude
+ *               userLng:
+ *                 type: number
+ *                 description: Current user longitude
+ *               destLat:
+ *                 type: number
+ *                 description: Destination latitude
+ *               destLng:
+ *                 type: number
+ *                 description: Destination longitude
+ *               destStationId:
+ *                 type: string
+ *                 description: Optional specific destination station ID
+ *     responses:
+ *       200:
+ *         description: Navigation route details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 walkOnly:
+ *                   type: boolean
+ *                 entry:
+ *                   type: object
+ *                 metro:
+ *                   type: object
+ *                 exit:
+ *                   type: object
+ *                 destination:
+ *                   type: object
+ *       400:
+ *         description: Missing required parameters
+ *       404:
+ *         description: Station or route not found
+ *       500:
+ *         description: Internal server error
  */
 router.post('/', (req, res) => {
   try {
@@ -78,27 +126,29 @@ router.post('/', (req, res) => {
     if (route.path.length >= 2 && bestExit) {
       const prevStationId = route.path[route.path.length - 2];
       const prevStation = stations.find(s => s.id === prevStationId);
-      
+
       if (exitStation.id === 'nizami') {
-        // Special case for Nizami station
+        // Special case for Nizami: hard-coded based on train arrival direction
+        // Darnagul -> Hazi direction (via Elmler): Turn RIGHT
+        // Hazi -> Darnagul direction (via 28 May): Turn LEFT
         if (prevStationId === 'elmler-akademiyasi') {
-          // Coming from Darnagul direction
-          turnDirection = {
-            direction_az: 'SAĞA',
-            direction_en: 'RIGHT'
+          turnDirection = { 
+            direction_az: 'SOLA', direction_en: 'LEFT',  // Street turn
+            platform_az: 'SAĞA', platform_en: 'RIGHT'    // Platform walk
           };
         } else if (prevStationId === '28-may') {
-          // Coming from Hazi Aslanov / 28-May direction
-          turnDirection = {
-            direction_az: 'SOLA',
-            direction_en: 'LEFT'
+          turnDirection = { 
+            direction_az: 'SAĞA', direction_en: 'RIGHT', // Street turn
+            platform_az: 'SOLA', platform_en: 'LEFT'     // Platform walk
           };
         }
       } else if (prevStation) {
         turnDirection = getTurnDirection(
           prevStation.center_lat, prevStation.center_lng,
           exitStation.center_lat, exitStation.center_lng,
-          bestExit.lat, bestExit.lng
+          bestExit.lat, bestExit.lng,
+          destLatFinal, destLngFinal,          // ← destination for street & platform calc
+          exitStation.exits                     // ← all exits for centroid calc
         );
       }
     }

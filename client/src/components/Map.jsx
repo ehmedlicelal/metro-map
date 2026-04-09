@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { t, LANGUAGES } from '../i18n/translations';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -10,7 +11,7 @@ import SearchBar from './SearchBar';
 import RoutePanel from './RoutePanel';
 import ExitCard from './ExitCard';
 import PhaseIndicator from './PhaseIndicator';
-import LanguageToggle from './LanguageToggle';
+import LoadingScreen from './LoadingScreen';
 
 import { useGeolocation, detectPhase } from '../hooks/useGeolocation';
 import { useRoute } from '../hooks/useRoute';
@@ -139,27 +140,73 @@ function ZoomTracker({ onZoomChange }) {
 
 /**
  * MapClickHandler — handles map clicks.
- * In 'destination' mode (default): clicking sets where the user wants to go.
- * In 'manual-location' mode: clicking sets the user's current position.
+ * In 'picking' mode: sets either origin or destination.
+ * Otherwise, default behavior is setting destination.
  */
-function MapClickHandler({ mode, onSetDestination, onSetLocation }) {
+function MapClickHandler({ pickingMode, onPick }) {
   useMapEvents({
     click(e) {
       const pos = { lat: e.latlng.lat, lng: e.latlng.lng };
-      if (mode === 'manual-location') {
-        onSetLocation({ ...pos, accuracy: 10 });
-      } else {
-        onSetDestination(pos);
-      }
+      onPick(pos);
     }
   });
   return null;
 }
 
 /**
- * Main map component — the entire app is this map with floating overlays.
+ * Map language selector — single 🌐 globe button that opens
+ * a dropdown listing ALL available languages.
  */
-export default function Map() {
+function MapLangCluster({ lang, setLang }) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { if (!e.target.closest('.map-lang-cluster')) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const current = LANGUAGES.find(l => l.code === lang);
+
+  return (
+    <div className="map-lang-cluster" id="map-lang-cluster">
+      <button
+        id="map-lang-globe-btn"
+        className={`map-flag-btn map-globe-btn ${open ? 'map-flag-btn--active' : ''}`}
+        onClick={() => setOpen(s => !s)}
+        title={current ? `${current.flag} ${current.name}` : 'Language'}
+        aria-label="Change language"
+      >
+        🌐
+      </button>
+
+      {open && (
+        <div className="map-more-panel" id="map-lang-panel">
+          <div className="map-more-title">Language</div>
+          <div className="map-more-grid">
+            {LANGUAGES.map(l => (
+              <button
+                key={l.code}
+                id={`map-lang-${l.code}`}
+                className={`map-more-item ${lang === l.code ? 'map-more-item--active' : ''}`}
+                onClick={() => { setLang(l.code); setOpen(false); }}
+                aria-label={l.name}
+              >
+                <span className="map-more-flag">{l.flag}</span>
+                <span className="map-more-name">{l.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Main map component.
+ */
+export default function Map({ initialOrigin, initialDestination, initialLang = 'en', onGoHome }) {
   const mapRef = useRef(null);
   const { location: gpsLocation, heading, speed, error: geoError } = useGeolocation();
   const {
@@ -167,7 +214,7 @@ export default function Map() {
     phase, setPhase, loadStations, calculateRoute, clearRoute
   } = useRoute();
 
-  const [lang, setLang] = useState('az');
+  const [lang, setLang] = useState(initialLang);
   const [destination, setDestination] = useState(null);
   const [walkingRoute, setWalkingRoute] = useState(null);
   const [postMetroRoute, setPostMetroRoute] = useState(null);
@@ -177,40 +224,22 @@ export default function Map() {
   const [manualLocation, setManualLocation] = useState(null);
   const [placeMarkers, setPlaceMarkers] = useState([]);
   const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
-  const [locationMode, setLocationMode] = useState('auto'); // 'auto' (GPS) or 'manual-location'
+  const [pickingMode, setPickingMode] = useState(null); // 'origin', 'destination', or null
   const [theme, setTheme] = useState(() => {
     if (typeof window === 'undefined') return 'light';
     return window.localStorage.getItem('theme') || 'light';
   });
+  const [skipGpsWait, setSkipGpsWait] = useState(false);
+  const [gpsWaitTimedOut, setGpsWaitTimedOut] = useState(false);
+  const gpsStartTimeRef = useRef(Date.now());
 
   // Effective location: manual click overrides GPS
   const location = manualLocation || gpsLocation;
 
   // Ref for destination handler to avoid stale closures
   const selectDestRef = useRef(null);
-
-  // Handle map click to set destination (default behavior)
-  const handleMapClickDestination = useCallback((pos) => {
-    if (selectDestRef.current) {
-      selectDestRef.current({ lat: pos.lat, lng: pos.lng, name: `${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}` });
-    }
-  }, []);
-
-  // Handle map click to set manual location (only when in manual mode)
-  const handleMapClickLocation = useCallback((pos) => {
-    setManualLocation(pos);
-    setLocationMode('auto'); // Switch back to auto after setting
-  }, []);
-
-  // Load stations on mount
-  useEffect(() => {
-    loadStations();
-  }, [loadStations]);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem('theme', theme);
-  }, [theme]);
+  // AbortController ref — cancels in-flight OSRM requests on each new selection
+  const routeAbortRef = useRef(null);
 
   // Camera control
   useMapCamera(mapRef, phase, manualLocation || gpsLocation, route);
@@ -223,22 +252,45 @@ export default function Map() {
     }
   }, [location, speed, route, setPhase]);
 
-  // When destination is selected, calculate route
-  const handleSelectDestination = useCallback(async (dest) => {
-    setDestination(dest);
 
-    // Use user's location or default Baku center
-    const userLat = location?.lat || 40.4093;
-    const userLng = location?.lng || 49.8671;
+  // Define core handlers at the top to avoid ReferenceErrors in other hooks/pickers
+  const handleSelectDestination = useCallback(async (dest, forcedOrigin = null) => {
+    // Cancel any previous in-flight OSRM requests
+    if (routeAbortRef.current) {
+      routeAbortRef.current.abort();
+    }
+    const abort = new AbortController();
+    routeAbortRef.current = abort;
+    const { signal } = abort;
+
+    setDestination(dest);
+    // Clear stale route data immediately
+    setWalkingRoute(null);
+    setPostMetroRoute(null);
+    setBottomCardInfo(null);
+    setRouteOptions(null);
+
+    // Immediately show the destination marker on the map
+    if (mapRef.current) {
+      mapRef.current.flyTo([dest.lat, dest.lng], 16, { duration: 1.5 });
+    }
+
+    // Use forced origin, manual origin, user's location, or default Baku center
+    const originToUse = forcedOrigin || manualLocation || gpsLocation;
+    const userLat = originToUse?.lat || 40.4093;
+    const userLng = originToUse?.lng || 49.8671;
 
     const result = await calculateRoute(userLat, userLng, dest.lat, dest.lng);
+    if (signal.aborted) return; // A newer click already took over
 
     if (result) {
       if (result.walkOnly) {
         const directWalk = await fetchWalkingRoute(
           userLat, userLng,
-          result.destination.lat, result.destination.lng
+          result.destination.lat, result.destination.lng,
+          signal
         );
+        if (signal.aborted) return;
         setWalkingRoute(directWalk);
         setPostMetroRoute(null);
         setBottomCardInfo({
@@ -249,29 +301,35 @@ export default function Map() {
         return;
       }
 
-      // Fetch all variations
-      const directWalk = await fetchWalkingRoute(userLat, userLng, dest.lat, dest.lng);
-      
-      const walk = result.entry?.recommendedEntry ? await fetchWalkingRoute(
-        userLat, userLng,
-        result.entry.recommendedEntry.lat, result.entry.recommendedEntry.lng
-      ) : null;
-      
-      const postWalk = result.exit?.recommendedExit ? await fetchWalkingRoute(
-        result.exit.recommendedExit.lat, result.exit.recommendedExit.lng,
-        dest.lat, dest.lng
-      ) : null;
+      // Fetch all walking variations in parallel
+      const [directWalk, walk, postWalk] = await Promise.all([
+        fetchWalkingRoute(userLat, userLng, dest.lat, dest.lng, signal),
+        result.entry?.recommendedEntry
+          ? fetchWalkingRoute(userLat, userLng, result.entry.recommendedEntry.lat, result.entry.recommendedEntry.lng, signal)
+          : Promise.resolve(null),
+        result.exit?.recommendedExit
+          ? fetchWalkingRoute(result.exit.recommendedExit.lat, result.exit.recommendedExit.lng, dest.lat, dest.lng, signal)
+          : Promise.resolve(null),
+      ]);
+      if (signal.aborted) return;
 
       const directWalkDuration = directWalk ? directWalk.duration : Infinity;
-      const walkDuration = walk ? walk.duration : 0;
-      const postWalkDuration = postWalk ? postWalk.duration : 0;
-      const metroStops = result.metro?.totalStops || 0;
-      
-      const metroWaitTime = 180; // 3 mins average wait for trains
-      const metroTransferTime = result.metro?.transfers?.length ? result.metro.transfers.length * 300 : 0; // 5 mins per transfer
-      const stationOverhead = 300; // 5 mins total to go down/up escalators and pass ticket gates
-      
-      const metroTotalDuration = walkDuration + postWalkDuration + metroWaitTime + metroTransferTime + stationOverhead + (metroStops * 120);
+      const walkDuration = walk ? walk.duration : ((result.entry?.walkingDistance || 0) / 1.3);
+      const postWalkDuration = postWalk ? postWalk.duration : ((result.destination?.walkingDistance || 0) / 1.3);
+
+      const metroDistanceM = (result.metro?.totalDistance || 0) * 1.2;
+      const metroRideSeconds = (metroDistanceM / 1000 / 40) * 3600;
+      const metroWaitTime = 240;
+      const stationOverhead = 360;
+      const metroTransferTime = (result.metro?.transfers?.length || 0) * 420;
+
+      const metroTotalDuration =
+        walkDuration +
+        metroRideSeconds +
+        postWalkDuration +
+        metroWaitTime +
+        stationOverhead +
+        metroTransferTime;
 
       const calculatedInfo = {
         directWalk,
@@ -282,11 +340,9 @@ export default function Map() {
         metroResult: result,
       };
 
-      // If walking is faster, or takes less than 10 minutes longer than the metro, offer both options
       if (directWalkDuration <= metroTotalDuration + 600) {
         setRouteOptions(calculatedInfo);
       } else {
-        // Metro is significantly faster, pick metro side-effects
         setWalkingRoute(walk);
         setPostMetroRoute(postWalk);
         setBottomCardInfo({
@@ -298,7 +354,126 @@ export default function Map() {
         });
       }
     }
-  }, [location, calculateRoute]);
+  }, [gpsLocation, manualLocation, calculateRoute]);
+
+  const handleSelectOrigin = useCallback((origin) => {
+    setManualLocation(origin);
+    if (destination) {
+      handleSelectDestination(destination, origin);
+    }
+  }, [destination, handleSelectDestination]);
+
+  // Handle map click picking
+  const handleMapClickPick = useCallback((pos) => {
+    const coords = { 
+      lat: pos.lat, 
+      lng: pos.lng, 
+      name: `${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}` 
+    };
+
+    if (pickingMode === 'origin') {
+      handleSelectOrigin(coords);
+    } else {
+      handleSelectDestination(coords);
+    }
+    setPickingMode(null);
+  }, [pickingMode, handleSelectOrigin, handleSelectDestination]);
+
+  // Load stations on mount
+  useEffect(() => {
+    loadStations();
+  }, [loadStations]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // When arriving from the landing page with pre-selected origin/destination, auto-route
+  const initialHandled = useRef(false);
+  useEffect(() => {
+    if ((initialDestination || initialOrigin) && !initialHandled.current) {
+      // Check if map is ready, otherwise retry shortly
+      if (selectDestRef.current) {
+        initialHandled.current = true;
+        if (initialOrigin) setManualLocation(initialOrigin);
+        
+        if (initialDestination) {
+          if (initialDestination.pickMode) {
+            setPickingMode(initialDestination.pickMode);
+          } else if (initialDestination.lat) {
+            handleSelectDestination(initialDestination);
+          }
+        }
+      }
+    }
+  }, [initialDestination, initialOrigin, handleSelectDestination]);
+
+  // Camera control
+  useMapCamera(mapRef, phase, manualLocation || gpsLocation, route);
+
+  // Auto-detect phase from GPS
+  useEffect(() => {
+    if (location && route) {
+      const detected = detectPhase(location, speed, route);
+      setPhase(detected);
+    }
+  }, [location, speed, route, setPhase]);
+
+
+
+  // RE-ROUTE if GPS location becomes available AFTER destination was set via default fallback
+  const lastRoutedLocationRef = useRef(null);
+  useEffect(() => {
+    if (!destination || !gpsLocation || manualLocation) return;
+    
+    // If we haven't routed from this location yet (or if distance is > 100m)
+    const dist = lastRoutedLocationRef.current 
+      ? L.latLng(gpsLocation.lat, gpsLocation.lng).distanceTo(L.latLng(lastRoutedLocationRef.current.lat, lastRoutedLocationRef.current.lng))
+      : 1000; // Trigger first time
+
+    // If we are significantly far from the last routed point and we were using a fallback or it's new
+    if (dist > 100) {
+      handleSelectDestination(destination);
+      lastRoutedLocationRef.current = { lat: gpsLocation.lat, lng: gpsLocation.lng };
+    }
+  }, [gpsLocation, destination, manualLocation, handleSelectDestination]);
+
+  const gpsTimerRef = useRef(null);
+  // Handle GPS wait timeout
+  useEffect(() => {
+    if (!initialDestination || initialOrigin || skipGpsWait || gpsWaitTimedOut) {
+      if (gpsTimerRef.current) {
+        clearInterval(gpsTimerRef.current);
+        gpsTimerRef.current = null;
+      }
+      return;
+    }
+    
+    // If timer already running, don't restart it (avoids resets on gpsLocation updates)
+    if (gpsTimerRef.current) return;
+
+    // Start tracking from right now
+    gpsStartTimeRef.current = Date.now();
+    
+    gpsTimerRef.current = setInterval(() => {
+      const elapsed = Date.now() - gpsStartTimeRef.current;
+      if (elapsed > 7000) {
+        setGpsWaitTimedOut(true);
+        if (gpsTimerRef.current) {
+          clearInterval(gpsTimerRef.current);
+          gpsTimerRef.current = null;
+        }
+      }
+    }, 1000);
+    
+    return () => {
+      if (gpsTimerRef.current) {
+        clearInterval(gpsTimerRef.current);
+        gpsTimerRef.current = null;
+      }
+    };
+  }, [initialDestination, initialOrigin, gpsLocation, skipGpsWait, gpsWaitTimedOut]);
 
   const applyWalkRoute = useCallback(() => {
     if (!routeOptions) return;
@@ -378,11 +553,29 @@ export default function Map() {
   };
 
   const showWelcomeCard = !route && !destination && !loading;
-  const locationStatusLabel = geoError
-    ? (lang === 'az' ? 'GPS bağlı deyil' : 'GPS unavailable')
-    : location
-      ? (lang === 'az' ? 'Canlı məkan aktivdir' : 'Live location active')
-      : (lang === 'az' ? 'Məkana icazə verin' : 'Enable location');
+  const tr = t(lang);
+  
+  // Show Loading Screen if we're waiting for GPS fix for a direct navigation
+  // Accuracy check: only accept location if accuracy < 100m, or if we've been waiting for > 7s
+  const isAccurateEnough = gpsLocation && (gpsLocation.accuracy < 100 || gpsWaitTimedOut);
+  const isWaitingForGps = initialDestination && !initialOrigin && !isAccurateEnough && !geoError && !manualLocation && !skipGpsWait && !gpsWaitTimedOut;
+  
+  if (isWaitingForGps) {
+    const loadingMsg = gpsLocation 
+      ? `${tr.improvingPrecision || "Improving precision..."} (${Math.round(gpsLocation.accuracy)}m)`
+      : tr.locatingYourself || "Finding your location...";
+
+    return (
+      <LoadingScreen 
+        persistent={true} 
+        message={loadingMsg} 
+        onCancel={() => setSkipGpsWait(true)}
+      />
+    );
+  }
+
+  const locationStatusLabel = geoError ? tr.gpsUnavailable
+    : location ? tr.gpsActive : tr.enableLocation;
 
   return (
     <div className="map-container" id="map-container">
@@ -400,9 +593,8 @@ export default function Map() {
         <MapController mapRef={mapRef} />
         <ZoomTracker onZoomChange={setZoomLevel} />
         <MapClickHandler
-          mode={locationMode}
-          onSetDestination={handleMapClickDestination}
-          onSetLocation={handleMapClickLocation}
+          pickingMode={pickingMode}
+          onPick={handleMapClickPick}
         />
 
         {/* Map tiles — Google Maps standard */}
@@ -502,6 +694,7 @@ export default function Map() {
           walkingRoute={walkingRoute}
           postMetroRoute={postMetroRoute}
           stationData={stationData}
+          userLocation={location}
         />
       </MapContainer>
 
@@ -510,28 +703,70 @@ export default function Map() {
       {/* Search Bar */}
       <SearchBar
         onSelectDestination={handleSelectDestination}
+        onSelectOrigin={handleSelectOrigin}
         onSelectPlace={handlePlaceMarkers}
         onClear={handleClearRoute}
+        onEnterPickMode={setPickingMode}
+        pickingMode={pickingMode}
+        origin={manualLocation}
+        destination={destination}
         lang={lang}
+        phase={phase}
       />
 
       <div className="top-control-stack" id="top-control-stack">
+        {onGoHome && (
+          <button
+            className="map-home-btn"
+            id="map-home-btn"
+            onClick={onGoHome}
+            title="Back to Home"
+            aria-label="Back to Home"
+          >
+            <span>←</span>
+            <span className="map-home-text">Home</span>
+          </button>
+        )}
+
         <button
           className="theme-toggle"
           id="theme-toggle"
           onClick={toggleTheme}
-          aria-label={theme === 'light'
-            ? (lang === 'az' ? 'Tünd rejimi aktiv et' : 'Enable dark mode')
-            : (lang === 'az' ? 'İşıqlı rejimi aktiv et' : 'Enable light mode')}
-          title={theme === 'light'
-            ? (lang === 'az' ? 'Tünd rejim' : 'Dark mode')
-            : (lang === 'az' ? 'İşıqlı rejim' : 'Light mode')}
+          aria-label={theme === 'light' ? tr.enableDark : tr.enableLight}
+          title={theme === 'light' ? tr.darkMode : tr.lightMode}
         >
           <span className="theme-toggle-icon">{theme === 'light' ? '🌙' : '☀️'}</span>
-          <span className="theme-toggle-text">{theme === 'light' ? 'Dark' : 'Light'}</span>
+          <span className="theme-toggle-text">{theme === 'light' ? tr.dark : tr.light}</span>
         </button>
 
-        <LanguageToggle lang={lang} onToggle={toggleLang} />
+        <MapLangCluster lang={lang} setLang={setLang} />
+
+        {/* Location mode toggle button */}
+        <button
+          className={`location-mode-btn ${manualLocation ? 'has-manual' : ''}`}
+          id="location-mode-btn"
+          onClick={() => {
+            if (manualLocation) {
+              setManualLocation(null);
+              setPickingMode(null);
+            } else {
+              setPickingMode('origin');
+            }
+          }}
+          title={manualLocation ? tr.switchToAuto : tr.setManually}
+        >
+          {manualLocation ? (
+            <>
+              <span className="loc-btn-icon">🛰️</span>
+              <span className="loc-btn-text">{tr.autoLocation}</span>
+            </>
+          ) : (
+            <>
+              <span className="loc-btn-icon">📍</span>
+              <span className="loc-btn-text">{tr.manualLocation}</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* Phase Indicator */}
@@ -543,14 +778,10 @@ export default function Map() {
           <div className="walk-card-icon">🚶</div>
           <div className="walk-card-info">
             <span className="walk-distance">
-              {lang === 'az'
-                ? `${bottomCardInfo.walkDistance}m piyada (${formatDuration(bottomCardInfo.totalTime)})`
-                : `Walk ${bottomCardInfo.walkDistance}m (${formatDuration(bottomCardInfo.totalTime)})`}
+              {tr.walkM(bottomCardInfo.walkDistance, formatDuration(bottomCardInfo.totalTime))}
             </span>
             <span className="walk-station walk-station-highlight">
-              {lang === 'az'
-                ? 'Metro lazım deyil — piyada gedin'
-                : 'No metro needed — just walk'}
+              {tr.noMetroNeeded}
             </span>
           </div>
           <button
@@ -568,18 +799,14 @@ export default function Map() {
           <div className="walk-card-icon">🚶</div>
           <div className="walk-card-info">
             <span className="walk-distance">
-              {lang === 'az'
-                ? `${bottomCardInfo.walkDistance}m piyada (${formatDuration(bottomCardInfo.totalTime)})`
-                : `Walk ${bottomCardInfo.walkDistance}m (${formatDuration(bottomCardInfo.totalTime)})`}
+              {tr.walkM(bottomCardInfo.walkDistance, formatDuration(bottomCardInfo.totalTime))}
             </span>
             <span className="walk-station">
-              {lang === 'az'
-                ? `${bottomCardInfo.stationName_az} stansiyasına`
-                : `to ${bottomCardInfo.stationName_en} station`}
+              {tr.toStation(lang === 'az' ? bottomCardInfo.stationName_az : bottomCardInfo.stationName_en)}
             </span>
             {bottomCardInfo.exitLabel && (
               <span className="walk-exit">
-                → {lang === 'az' ? `${bottomCardInfo.exitLabel}-dən daxil olun` : `Enter from ${bottomCardInfo.exitLabel}`}
+                → {tr.enterFrom(bottomCardInfo.exitLabel)}
               </span>
             )}
           </div>
@@ -587,7 +814,7 @@ export default function Map() {
             className="start-nav-btn"
             onClick={() => setPhase(2)}
           >
-            {lang === 'az' ? 'Başla' : 'Start'}
+            {tr.start}
           </button>
         </div>
       )}
@@ -596,28 +823,26 @@ export default function Map() {
       {routeOptions && (
         <div className="route-options-backdrop" id="route-options-modal">
           <div className="route-options-card">
-            <h3>{lang === 'az' ? 'Marşrutunuzu seçin' : 'Choose your route'}</h3>
-            <p className="options-subtitle">
-              {lang === 'az' ? 'Piyada getmək daha tezdir!' : 'Walking is faster!'}
-            </p>
+            <h3>{tr.chooseRoute}</h3>
+            <p className="options-subtitle">{tr.walkingFaster}</p>
             <div className="options-buttons">
               <button className="option-btn walk-option" onClick={applyWalkRoute}>
                 <span className="icon">🚶</span>
                 <span className="details">
-                  <span className="mode">{lang === 'az' ? 'Piyada' : 'Walk'}</span>
+                  <span className="mode">{tr.walk}</span>
                   <span className="time">{formatDuration(routeOptions.directWalkDuration)}</span>
                 </span>
               </button>
               <button className="option-btn metro-option" onClick={applyMetroRoute}>
                 <span className="icon">🚇</span>
                 <span className="details">
-                  <span className="mode">{lang === 'az' ? 'Metro' : 'Metro'}</span>
+                  <span className="mode">{tr.metro}</span>
                   <span className="time">{formatDuration(routeOptions.metroTotalDuration)}</span>
                 </span>
               </button>
             </div>
             <button className="cancel-nav-btn" onClick={handleClearRoute}>
-              {lang === 'az' ? 'Ləğv et' : 'Cancel'}
+              {tr.cancel}
             </button>
           </div>
         </div>
@@ -641,12 +866,10 @@ export default function Map() {
           <div className="walk-card-icon">🏁</div>
           <div className="walk-card-info">
             <span className="walk-distance">
-              {lang === 'az'
-                ? `${route.destination?.walkingDistance || '?'}m piyada`
-                : `Walk ${route.destination?.walkingDistance || '?'}m`}
+              {tr.walkToDestM(route.destination?.walkingDistance || '?')}
             </span>
             <span className="walk-station">
-              {destination?.name?.split(',')[0] || (lang === 'az' ? 'Təyinat' : 'Destination')}
+              {destination?.name?.split(',')[0] || tr.destination}
             </span>
           </div>
         </div>
@@ -656,7 +879,7 @@ export default function Map() {
       {loading && (
         <div className="loading-overlay" id="loading-overlay">
           <div className="loading-spinner" />
-          <span>{lang === 'az' ? 'Marşrut hesablanır...' : 'Calculating route...'}</span>
+          <span>{tr.calculating}</span>
         </div>
       )}
 
@@ -667,54 +890,14 @@ export default function Map() {
         </div>
       )}
 
-      {/* Manual location mode hint */}
-      {locationMode === 'manual-location' && (
+      {/* Picking mode hint */}
+      {pickingMode && (
         <div className="location-hint" id="location-hint">
-          <span className="hint-icon">📍</span>
+          <span className="hint-icon">👆</span>
           <span className="hint-text">
-            {lang === 'az'
-              ? 'Yerinizi təyin etmək üçün xəritəyə klikləyin'
-              : 'Tap the map to set your location'}
+            {pickingMode === 'origin' ? tr.tapMapToSetOrigin || "Tap map to set starting point" : tr.tapMapToSetDest || "Tap map to set destination"}
           </span>
         </div>
-      )}
-
-      {/* Location mode toggle button - Hidden during navigation to save space */}
-      {!route && !routeOptions && (
-        <button
-          className={`location-mode-btn ${locationMode === 'manual-location' ? 'active' : ''} ${manualLocation ? 'has-manual' : ''}`}
-        id="location-mode-btn"
-        onClick={() => {
-          if (manualLocation) {
-            // Currently using manual location → switch back to GPS
-            setManualLocation(null);
-            setLocationMode('auto');
-          } else {
-            // Toggle into manual mode so next click sets location
-            setLocationMode(prev => prev === 'manual-location' ? 'auto' : 'manual-location');
-          }
-        }}
-        title={manualLocation
-          ? (lang === 'az' ? 'Avtomatik yerə qayıt' : 'Switch to auto location')
-          : (lang === 'az' ? 'Yeri əl ilə seç' : 'Set location manually')}
-      >
-        {manualLocation ? (
-          <>
-            <span className="loc-btn-icon">🛰️</span>
-            <span className="loc-btn-text">{lang === 'az' ? 'Avto yer' : 'Auto Location'}</span>
-          </>
-        ) : locationMode === 'manual-location' ? (
-          <>
-            <span className="loc-btn-icon">👆</span>
-            <span className="loc-btn-text">{lang === 'az' ? 'Xəritəyə klikləyin' : 'Tap the map'}</span>
-          </>
-        ) : (
-          <>
-            <span className="loc-btn-icon">📍</span>
-            <span className="loc-btn-text">{lang === 'az' ? 'Əl ilə yer' : 'Manual Location'}</span>
-          </>
-        )}
-      </button>
       )}
 
       {/* Phase nav buttons (for demo/testing) */}

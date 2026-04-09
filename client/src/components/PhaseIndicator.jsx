@@ -1,33 +1,18 @@
 import React from 'react';
+import { t } from '../i18n/translations';
 
 /**
  * Phase indicator badges — shows current journey phase.
- * Phases: Walk → Metro → Exit → Walk
+ * Uses full translation system supporting 30+ languages.
  */
-const PHASES = {
-  az: [
-    { id: 1, icon: '🚶', label: 'Piyada', desc: 'Stansiyaya doğru' },
-    { id: 2, icon: '🚇', label: 'Metroda', desc: 'Qatarda' },
-    { id: 3, icon: '🚪', label: 'Çıxış', desc: 'Stansiyadan çıxış' },
-    { id: 4, icon: '🏁', label: 'Piyada', desc: 'Təyinata doğru' }
-  ],
-  en: [
-    { id: 1, icon: '🚶', label: 'Walk', desc: 'To station' },
-    { id: 2, icon: '🚇', label: 'Metro', desc: 'On train' },
-    { id: 3, icon: '🚪', label: 'Exit', desc: 'Leave station' },
-    { id: 4, icon: '🏁', label: 'Walk', desc: 'To destination' }
-  ]
-};
-
 export default function PhaseIndicator({ phase, lang, isWalkOnly }) {
   if (phase === 0) return null;
+  const tr = t(lang);
 
-  let phases = PHASES[lang] || PHASES.en;
+  let phases = tr.phases;
 
   if (isWalkOnly) {
-    phases = [
-      { id: 1, icon: '🚶', label: lang === 'az' ? 'Piyada' : 'Walk', desc: lang === 'az' ? 'Təyinata doğru' : 'To destination' }
-    ];
+    phases = [tr.walkOnlyPhase];
   }
 
   return (

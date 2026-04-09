@@ -35,7 +35,7 @@ export function useGeolocation() {
       },
       {
         enableHighAccuracy: true,
-        maximumAge: 1000,
+        maximumAge: 0,
         timeout: 10000
       }
     );

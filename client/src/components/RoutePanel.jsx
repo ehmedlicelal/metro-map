@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { t } from '../i18n/translations';
 
 /**
  * Slide-up bottom drawer panel showing metro journey information.
@@ -9,6 +10,7 @@ export default function RoutePanel({ route, phase, currentStopIndex, lang }) {
   const [touchStartY, setTouchStartY] = useState(null);
 
   if (!route || phase !== 2) return null;
+  const tr = t(lang);
 
   const { metro, entry, exit } = route;
   const stations = metro?.stationDetails || [];
@@ -44,10 +46,10 @@ export default function RoutePanel({ route, phase, currentStopIndex, lang }) {
     const tIndex = stations.findIndex(s => s.id === t.station);
     return tIndex > (currentStopIndex || 0);
   }).length;
-  
+
   const timeRemainingSeconds = Math.max(0, stopsRemaining * 120) + (transfersRemaining * 300);
   const arrivalTime = new Date(Date.now() + timeRemainingSeconds * 1000);
-  const timeString = arrivalTime.toLocaleTimeString(lang === 'az' ? 'az-AZ' : 'en-US', {
+  const timeString = arrivalTime.toLocaleTimeString(tr?.timeLocale || 'en-US', {
     hour: '2-digit',
     minute: '2-digit'
   });
@@ -61,7 +63,7 @@ export default function RoutePanel({ route, phase, currentStopIndex, lang }) {
     if (touchStartY === null) return;
     const touchEndY = e.changedTouches[0].clientY;
     const distance = touchEndY - touchStartY;
-    
+
     // Swipe threshold
     if (distance > 40) {
       setIsCollapsed(true);
@@ -72,15 +74,15 @@ export default function RoutePanel({ route, phase, currentStopIndex, lang }) {
   };
 
   return (
-    <div 
-      className={`route-panel ${phase === 2 ? 'visible' : ''} ${isCollapsed ? 'collapsed' : ''}`} 
+    <div
+      className={`route-panel ${phase === 2 ? 'visible' : ''} ${isCollapsed ? 'collapsed' : ''}`}
       id="route-panel"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Clickable Handle to toggle visibility */}
-      <button 
-        className="panel-handle-btn" 
+      <button
+        className="panel-handle-btn"
         onClick={() => setIsCollapsed(!isCollapsed)}
         aria-label={isCollapsed ? "Expand route details" : "Collapse route details"}
       >
@@ -95,10 +97,7 @@ export default function RoutePanel({ route, phase, currentStopIndex, lang }) {
             className={`line-indicator ${currentLine?.line ? `line-${currentLine.line}` : 'line-green'}`}
           />
           <div className="panel-title">
-            <span className="on-line">
-              {lang === 'az' ? 'Xəttdə' : 'On'}{' '}
-              {lang === 'az' ? currentLine?.lineName_az : currentLine?.lineName_en}
-            </span>
+            <span className="on-line">{tr.onLine}{' '}{lang === 'az' ? currentLine?.lineName_az : currentLine?.lineName_en}</span>
             {directionStation && (
               <span className="direction">
                 → {lang === 'az' ? directionStation.station_az : directionStation.station_en}
@@ -110,7 +109,7 @@ export default function RoutePanel({ route, phase, currentStopIndex, lang }) {
         {/* Next Stop */}
         {nextStation && (
           <div className="panel-next-stop">
-            <span className="next-label">{lang === 'az' ? 'Növbəti' : 'Next'}</span>
+            <span className="next-label">{tr.next}</span>
             <span className="next-station">
               {lang === 'az' ? nextStation.station_az : nextStation.station_en}
             </span>
@@ -119,37 +118,25 @@ export default function RoutePanel({ route, phase, currentStopIndex, lang }) {
 
         {/* Exit Station */}
         <div className="panel-exit-stop">
-          <span className="exit-label">{lang === 'az' ? 'Düşün' : 'Exit at'}</span>
+          <span className="exit-label">{tr.exitAt}</span>
           <span className="exit-station">
             🔴 {lang === 'az' ? exit?.station?.station_az : exit?.station?.station_en}
           </span>
         </div>
-
-        {/* Door side hint */}
-        {directionStation && (
-          <div className="door-side-hint">
-            <span className="door-icon">🚪</span>
-            <span className="door-text">
-              {lang === 'az' 
-                ? `Düşmək üçün ${(directionStation.id === 'darnagul' || directionStation.id === 'hazi-aslanov') ? 'sağa' : 'sola'} dönün` 
-                : `Turn ${(directionStation.id === 'darnagul' || directionStation.id === 'hazi-aslanov') ? 'right' : 'left'} to get off`}
-            </span>
-          </div>
-        )}
 
         {/* Stops Counter & ETA */}
         <div className="panel-metrics">
           <div className="counter-badge">
             <span className="counter-number">{Math.max(0, stopsRemaining)}</span>
             <span className="counter-label">
-              {lang === 'az' ? 'dayanacaq qaldı' : 'stops remaining'}
+              {lang === 'az' ? 'dayanacaq qaldı' : tr.stopsRemaining}
             </span>
           </div>
           <div className="eta-badge">
             <span className="eta-icon">⏱️</span>
             <span className="eta-time">{timeString}</span>
             <span className="eta-label">
-              {lang === 'az' ? 'çatma vaxtı' : 'arrival'}
+              {tr.arrival}
             </span>
           </div>
         </div>
@@ -163,7 +150,7 @@ export default function RoutePanel({ route, phase, currentStopIndex, lang }) {
                 <div key={i} className="transfer-info">
                   <span className="transfer-icon">🔄</span>
                   <span>
-                    {lang === 'az' ? 'Keçid' : 'Transfer'}: {' '}
+                    {tr.transfer}: {' '}
                     {lang === 'az' ? transferStation?.station_az : transferStation?.station_en}
                   </span>
                 </div>
