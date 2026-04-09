@@ -10,15 +10,36 @@ export function useGeolocation() {
   const [speed, setSpeed] = useState(null);
   const [error, setError] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
+  const [isReady, setIsReady] = useState(false); // Accuracy < 100m or timed out
   const watchIdRef = useRef(null);
+  const startTimeRef = useRef(null);
 
-  useEffect(() => {
+  const startTracking = () => {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by this browser');
       return;
     }
 
+    if (watchIdRef.current !== null) return; // Already tracking
+
     setIsTracking(true);
+    startTimeRef.current = Date.now();
+
+    // Warm up the GPS immediately
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, heading: h, speed: s, accuracy } = position.coords;
+        setLocation({ lat: latitude, lng: longitude, accuracy });
+        setHeading(h);
+        setSpeed(s);
+        setError(null);
+        if (accuracy < 100) setIsReady(true);
+      },
+      (err) => {
+        console.warn('Initial GPS warmup failed:', err);
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
@@ -27,6 +48,12 @@ export function useGeolocation() {
         setHeading(h);
         setSpeed(s);
         setError(null);
+        
+        // Mark as ready if accurate enough or if we've been waiting for > 6s
+        const elapsed = Date.now() - startTimeRef.current;
+        if (accuracy < 100 || elapsed > 6000) {
+          setIsReady(true);
+        }
       },
       (err) => {
         console.error('Geolocation error:', err);
@@ -40,6 +67,14 @@ export function useGeolocation() {
       }
     );
 
+    // Backup timer to ensure we mark as ready even if no position update comes
+    setTimeout(() => setIsReady(true), 7000);
+  };
+
+  useEffect(() => {
+    // We can auto-start or let the component trigger it
+    startTracking();
+
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -47,7 +82,7 @@ export function useGeolocation() {
     };
   }, []);
 
-  return { location, heading, speed, error, isTracking };
+  return { location, heading, speed, error, isTracking, isReady, startTracking };
 }
 
 /**

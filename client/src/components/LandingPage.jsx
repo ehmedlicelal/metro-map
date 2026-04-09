@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchPlaces } from '../services/api';
 import { LANGUAGES, PINNED_LANGS, t } from '../i18n/translations.jsx';
-import { useGeolocation } from '../hooks/useGeolocation';
 import './LandingPage.css';
 
 const MORE_LANGS = LANGUAGES.filter(l => !PINNED_LANGS.includes(l.code));
 const PINNED = LANGUAGES.filter(l => PINNED_LANGS.includes(l.code));
 
-export default function LandingPage({ onSelectDestination }) {
+export default function LandingPage({ onSelectDestination, gpsLocation, startGps }) {
   const [lang, setLang] = useState('en');
-  const { location: gpsLocation } = useGeolocation();
 
   // Destination states
   const [query, setQuery] = useState('');
@@ -173,7 +171,10 @@ export default function LandingPage({ onSelectDestination }) {
                   placeholder={tr.searchDestPlaceholder}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onFocus={() => { setIsOpen(results.length > 0); }}
+                  onFocus={() => { 
+                    setIsOpen(results.length > 0); 
+                    if (startGps) startGps(); // Pre-warm GPS on focus as requested
+                  }}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
                   autoComplete="off"
                 />

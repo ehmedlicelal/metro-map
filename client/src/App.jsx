@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Map from './components/Map';
 import LoadingScreen from './components/LoadingScreen';
 import LandingPage from './components/LandingPage';
+import { useGeolocation } from './hooks/useGeolocation';
 import './index.css';
 
 export default function App() {
@@ -10,6 +11,9 @@ export default function App() {
   const [initialOrigin, setInitialOrigin] = useState(null);
   const [initialDestination, setInitialDestination] = useState(null);
   const [initialLang, setInitialLang] = useState('en');
+
+  // Root-level geolocation tracking to keep it alive during page transitions
+  const geo = useGeolocation();
 
   useEffect(() => {
     document.body.classList.toggle('page--map',     page === 'map');
@@ -30,10 +34,20 @@ export default function App() {
     <>
       {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
       {!isLoading && page === 'landing' && (
-        <LandingPage onSelectDestination={handleLandingSelect} />
+        <LandingPage 
+          onSelectDestination={handleLandingSelect} 
+          gpsLocation={geo.location}
+          startGps={geo.startTracking}
+        />
       )}
       {!isLoading && page === 'map' && (
-        <Map initialOrigin={initialOrigin} initialDestination={initialDestination} initialLang={initialLang} onGoHome={() => setPage('landing')} />
+        <Map 
+          initialOrigin={initialOrigin} 
+          initialDestination={initialDestination} 
+          initialLang={initialLang} 
+          onGoHome={() => setPage('landing')}
+          gpsState={geo}
+        />
       )}
     </>
   );

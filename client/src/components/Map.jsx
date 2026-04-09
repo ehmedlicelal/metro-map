@@ -13,7 +13,7 @@ import ExitCard from './ExitCard';
 import PhaseIndicator from './PhaseIndicator';
 import LoadingScreen from './LoadingScreen';
 
-import { useGeolocation, detectPhase } from '../hooks/useGeolocation';
+import { detectPhase } from '../hooks/useGeolocation';
 import { useRoute } from '../hooks/useRoute';
 import { useMapCamera } from '../hooks/useMapCamera';
 import { fetchWalkingRoute } from '../services/api';
@@ -206,9 +206,9 @@ function MapLangCluster({ lang, setLang }) {
 /**
  * Main map component.
  */
-export default function Map({ initialOrigin, initialDestination, initialLang = 'en', onGoHome }) {
+export default function Map({ initialOrigin, initialDestination, initialLang = 'en', onGoHome, gpsState }) {
   const mapRef = useRef(null);
-  const { location: gpsLocation, heading, speed, error: geoError } = useGeolocation();
+  const { location: gpsLocation, heading, speed, error: geoError } = gpsState || {};
   const {
     route, setRoute, stationData, loading, error: routeError,
     phase, setPhase, loadStations, calculateRoute, clearRoute
@@ -230,8 +230,6 @@ export default function Map({ initialOrigin, initialDestination, initialLang = '
     return window.localStorage.getItem('theme') || 'light';
   });
   const [skipGpsWait, setSkipGpsWait] = useState(false);
-  const [gpsWaitTimedOut, setGpsWaitTimedOut] = useState(false);
-  const gpsStartTimeRef = useRef(Date.now());
 
   // Effective location: manual click overrides GPS
   const location = manualLocation || gpsLocation;
@@ -439,41 +437,8 @@ export default function Map({ initialOrigin, initialDestination, initialLang = '
     }
   }, [gpsLocation, destination, manualLocation, handleSelectDestination]);
 
-  const gpsTimerRef = useRef(null);
-  // Handle GPS wait timeout
-  useEffect(() => {
-    if (!initialDestination || initialOrigin || skipGpsWait || gpsWaitTimedOut) {
-      if (gpsTimerRef.current) {
-        clearInterval(gpsTimerRef.current);
-        gpsTimerRef.current = null;
-      }
-      return;
-    }
-    
-    // If timer already running, don't restart it (avoids resets on gpsLocation updates)
-    if (gpsTimerRef.current) return;
-
-    // Start tracking from right now
-    gpsStartTimeRef.current = Date.now();
-    
-    gpsTimerRef.current = setInterval(() => {
-      const elapsed = Date.now() - gpsStartTimeRef.current;
-      if (elapsed > 7000) {
-        setGpsWaitTimedOut(true);
-        if (gpsTimerRef.current) {
-          clearInterval(gpsTimerRef.current);
-          gpsTimerRef.current = null;
-        }
-      }
-    }, 1000);
-    
-    return () => {
-      if (gpsTimerRef.current) {
-        clearInterval(gpsTimerRef.current);
-        gpsTimerRef.current = null;
-      }
-    };
-  }, [initialDestination, initialOrigin, gpsLocation, skipGpsWait, gpsWaitTimedOut]);
+  // GPS timeout and accuracy checks are now handled by the shared gpsState in App/useGeolocation hook
+  // which ensures time spent on the landing page is counted.
 
   const applyWalkRoute = useCallback(() => {
     if (!routeOptions) return;
@@ -556,9 +521,8 @@ export default function Map({ initialOrigin, initialDestination, initialLang = '
   const tr = t(lang);
   
   // Show Loading Screen if we're waiting for GPS fix for a direct navigation
-  // Accuracy check: only accept location if accuracy < 100m, or if we've been waiting for > 7s
-  const isAccurateEnough = gpsLocation && (gpsLocation.accuracy < 100 || gpsWaitTimedOut);
-  const isWaitingForGps = initialDestination && !initialOrigin && !isAccurateEnough && !geoError && !manualLocation && !skipGpsWait && !gpsWaitTimedOut;
+  // Logic: only show if we have an initial destination, no fixed origin, and hook says not ready yet
+  const isWaitingForGps = initialDestination && !initialOrigin && !gpsState?.isReady && !geoError && !manualLocation && !skipGpsWait;
   
   if (isWaitingForGps) {
     const loadingMsg = gpsLocation 
