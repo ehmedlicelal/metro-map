@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { t } from '../i18n/translations';
+import { t } from '../i18n/translations.jsx';
 
 /**
  * Exit instruction card — prominent floating card at bottom of screen.
  * Shown during Phase 3 (Exiting the Station).
- * Supports 30+ languages via translations system.
+ * Supports 10+ languages via translations system.
  */
 export default function ExitCard({ route, phase, lang }) {
   const [isCollapsed, setIsCollapsed] = useState(false);

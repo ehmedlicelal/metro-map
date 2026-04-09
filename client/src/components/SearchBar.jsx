@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchPlaces } from '../services/api';
-import { t } from '../i18n/translations';
+import { t } from '../i18n/translations.jsx';
 
 /**
  * Floating search bar with autocomplete — sits on top of the map.

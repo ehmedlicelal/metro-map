@@ -1,9 +1,9 @@
 import React from 'react';
-import { t } from '../i18n/translations';
+import { t } from '../i18n/translations.jsx';
 
 /**
  * Phase indicator badges — shows current journey phase.
- * Uses full translation system supporting 30+ languages.
+ * Uses full translation system supporting 10+ languages.
  */
 export default function PhaseIndicator({ phase, lang, isWalkOnly }) {
   if (phase === 0) return null;

@@ -100,12 +100,12 @@ const T = {
     light: 'Light',
     // About section
     about: {
-      badge:    'Haqqımızda',
-      title:    'Bakı Metrosunda Etibar Olunan Bələdçiniz',
-      p1:       'Biz Bakıda ictimai nəqliyyatı hər kəs üçün — sakinlər, turistlər və gündəlik sərnişinlər üçün əlçatan, anlaşılan və rahat etmək qərarına gəlmiş açıq məlumat agentliyiyik.',
-      p2:       'Platformamız real vaxt coğrafi mövqe, rəsmi metro stansiyası məlumatları və piyada marşrut planlamasını birləşdirərək ən dəqiq naviqasiya təcrübəsini təqdim edir.',
-      highlight: '30+ dildə',
-      pills:    ['🏛️ Açıq Məlumat', '🛰️ GPS', '🆓 Pulsuz', '🌐 30+ Dil'],
+      badge: 'Haqqımızda',
+      title: 'Bakı Metrosunda Etibar Olunan Bələdçiniz',
+      p1: 'Biz Bakıda ictimai nəqliyyatı hər kəs üçün — sakinlər, turistlər və gündəlik sərnişinlər üçün əlçatan, anlaşılan və rahat etmək qərarına gəlmiş açıq məlumat agentliyiyik.',
+      p2: 'Platformamız real vaxt coğrafi mövqe, rəsmi metro stansiyası məlumatları və piyada marşrut planlamasını birləşdirərək ən dəqiq naviqasiya təcrübəsini təqdim edir.',
+      highlight: '10+ dildə',
+      pills: ['🏛️ Açıq Məlumat', '🛰️ GPS', '🆓 Pulsuz', '🌐 10+ Dil'],
     },
     // Exits
     exits: 'çıxış',
@@ -125,6 +125,12 @@ const T = {
         free: 'Pulsuz'
       },
       writeDownOrigin: 'Zəhmət olmasa başlanğıc nöqtənizi xəritədə qeyd edin'
+    },
+    devs: {
+      badge: 'Proqramçılar',
+      title: 'Açıq Standartlarla Qurulub',
+      p1: 'Bizim marşrutlaşdırma və axtarış imkanlarımız açıq REST API vasitəsilə təqdim olunur. Bu, digər proqramçılara Bakı Metrosu naviqasiyasını öz layihələrinə inteqrasiya etməyə imkan verir.',
+      viewApi: 'API Sənədlərinə Bax',
     },
   },
   tr: {
@@ -187,12 +193,12 @@ const T = {
     light: 'Aydınlık',
     // About section
     about: {
-      badge:    'Hakkımızda',
+      badge: 'Hakkımızda',
       title: 'Bakü Metrosunda Güvenilir Rehberiniz',
       p1: 'Bakü\'de toplu taşımayı herkes için — sakinler, turistler ve günlük yolcular için erişilebilir ve anlaşılır kılmaya adanmış açık veri ajansıyız.',
-      p2: 'Platformumuz gerçek zamanlı konum, resmi metro istasyonu verileri ve yaya yönlendirmeyi bir araya getirerek en doğru navigasyon deneyimini sunar. Reklamsız, takipsiz — 30+ dilde güvenilir yönlendirme.',
-      highlight: '30+ dilde',
-      pills: ['🏛️ Açık Veri', '🛰️ GPS', '🆓 Ücretsiz', '🌐 30+ Dil'],
+      p2: 'Platformumuz gerçek zamanlı konum, resmi metro istasyonu verileri ve yaya yönlendirmeyi bir araya getirerek en doğru navigasyon deneyimini sunar. Reklamsız, takipsiz — 10+ dilde güvenilir yönlendirme.',
+      highlight: '10+ dilde',
+      pills: ['🏛️ Açık Veri', '🛰️ GPS', '🆓 Ücretsiz', '🌐 10+ Dil'],
     },
     exits: 'çıkış',
     landing: {
@@ -210,6 +216,12 @@ const T = {
         free: 'Ücretsiz'
       },
       writeDownOrigin: 'Lütfen başlangıç noktanızı haritada belirtin'
+    },
+    devs: {
+      badge: 'Geliştiriciler',
+      title: 'Açık Standartlarla Oluşturuldu',
+      p1: 'Rota oluşturma ve arama yeteneklerimiz genel bir REST API aracılığıyla sunulmaktadır. Bu, geliştiricilerin Bakü Metrosu navigasyonunu kendi projelerine entegre etmelerine olanak tanır.',
+      viewApi: 'API Dokümantasyonunu Görüntüle',
     },
   },
   en: {
@@ -272,12 +284,12 @@ const T = {
     light: 'Light',
     // About section
     about: {
-      badge:    'About Us',
-      title:    'Your Trusted Guide to Baku Metro',
-      p1:       'We are a dedicated open-data transit agency committed to making public transportation in Baku accessible, understandable, and enjoyable for everyone — residents, tourists, and daily commuters alike.',
-      p2:       'Our platform combines real-time geolocation, official metro station data, and pedestrian routing to deliver the most accurate navigation experience. Built with open-source tools and open datasets — no ads, no tracking, just reliable directions in 30+ languages.',
-      highlight: '30+ languages',
-      pills:    ['🏛️ Open Data', '🛰️ GPS-Powered', '🆓 100% Free', '🌐 30+ Languages'],
+      badge: 'About Us',
+      title: 'Your Trusted Guide to Baku Metro',
+      p1: 'We are a dedicated open-data transit agency committed to making public transportation in Baku accessible, understandable, and enjoyable for everyone — residents, tourists, and daily commuters alike.',
+      p2: 'Our platform combines real-time geolocation, official metro station data, and pedestrian routing to deliver the most accurate navigation experience. Built with open-source tools and open datasets — no ads, no tracking, just reliable directions in 10+ languages.',
+      highlight: '10+ languages',
+      pills: ['🏛️ Open Data', '🛰️ GPS-Powered', '🆓 100% Free', '🌐 10+ Languages'],
     },
     exits: 'exits',
     landing: {
@@ -295,6 +307,12 @@ const T = {
         free: 'Free'
       },
       writeDownOrigin: 'Please write down (manually set) your start location on the map'
+    },
+    devs: {
+      badge: 'Developers',
+      title: 'Built with Open Standards',
+      p1: 'Our core routing and search capabilities are exposed via a public REST API, allowing developers to integrate Baku Metro navigation into their own projects.',
+      viewApi: 'View API Documentation',
     },
   },
   ru: {
@@ -357,12 +375,12 @@ const T = {
     light: 'Светлый',
     // About section
     about: {
-      badge:    'О нас',
-      title:    'Ваш надёжный путеводитель по бакинскому метро',
-      p1:       'Мы — специализированное агентство открытых данных, стремящееся сделать общественный транспорт в Баку доступным и понятным для всех — жителей, туристов и ежедневных пассажиров.',
-      p2:       'Наша платформа объединяет геолокацию в реальном времени, официальные данные о станциях метро и пешеходную навигацию. Без рекламы, без слежки — надёжные маршруты на 30+ языках.',
-      highlight: '30+ языках',
-      pills:    ['🏛️ Открытые данные', '🛰️ GPS', '🆓 Бесплатно', '🌐 30+ языков'],
+      badge: 'О нас',
+      title: 'Ваш надёжный путеводитель по бакинскому метро',
+      p1: 'Мы — специализированное агентство открытых данных, стремящееся сделать общественный транспорт в Баку доступным и понятным для всех — жителей, туристов и ежедневных пассажиров.',
+      p2: 'Наша платформа объединяет геолокацию в реальном времени, официальные данные о станциях метро и пешеходную навигацию. Без рекламы, без слежки — надёжные маршруты на 10+ языках.',
+      highlight: '10+ языках',
+      pills: ['🏛️ Открытые данные', '🛰️ GPS', '🆓 Бесплатно', '🌐 10+ языков'],
     },
     exits: 'выходов',
     landing: {
@@ -380,6 +398,12 @@ const T = {
         free: 'Бесплатно'
       },
       writeDownOrigin: 'Пожалуйста, укажите точку отправления на карте вручную'
+    },
+    devs: {
+      badge: 'Разработчикам',
+      title: 'Построено на открытых стандартах',
+      p1: 'Наши основные возможности маршрутизации и поиска доступны через публичный REST API, что позволяет разработчикам интегрировать навигацию по Бакинскому метро в свои проекты.',
+      viewApi: 'Просмотреть документацию API',
     },
   },
   fr: {
@@ -436,12 +460,12 @@ const T = {
     light: 'Clair',
     // About section
     about: {
-      badge:    'À propos',
-      title:    'Votre guide fiable pour le métro de Bakou',
-      p1:       'Nous sommes une agence de données ouvertes dédiée à rendre les transports en commun de Bakou accessibles et compréhensibles pour tous — résidents, touristes et navetteurs quotidiens.',
-      p2:       'Notre plateforme combine la géolocalisation en temps réel, les données officielles des stations de métro et la navigation piétonne pour offrir l\'expérience de navigation la plus précise. Sans pub, sans traçage — des itinéraires fiables en 30+ langues.',
-      highlight: '30+ langues',
-      pills:    ['🏛️ Données ouvertes', '🛰️ GPS', '🆓 Gratuit', '🌐 30+ langues'],
+      badge: 'À propos',
+      title: 'Votre guide fiable pour le métro de Bakou',
+      p1: 'Nous sommes une agence de données ouvertes dédiée à rendre les transports en commun de Bakou accessibles et compréhensibles pour tous — résidents, touristes et navetteurs quotidiens.',
+      p2: 'Notre plateforme combine la géolocalisation en temps réel, les données officielles des stations de métro et la navigation piétonne pour offrir l\'expérience de navigation la plus précise. Sans pub, sans traçage — des itinéraires fiables en 10+ langues.',
+      highlight: '10+ langues',
+      pills: ['🏛️ Données ouvertes', '🛰️ GPS', '🆓 Gratuit', '🌐 10+ langues'],
     },
     exits: 'sorties',
     landing: {
@@ -458,6 +482,12 @@ const T = {
         nav: '24/7 Nav',
         free: 'Gratuit'
       }
+    },
+    devs: {
+      badge: 'Développeurs',
+      title: 'Construit avec des standards ouverts',
+      p1: 'Nos capacités de routage et de recherche sont exposées via une API REST publique, permettant aux développeurs d\'intégrer la navigation du métro de Bakou dans leurs propres projets.',
+      viewApi: 'Voir la documentation API',
     },
   },
   de: {
@@ -514,12 +544,12 @@ const T = {
     light: 'Hell',
     // About section
     about: {
-      badge:    'Über uns',
-      title:    'Ihr zuverlässiger Begleiter für die Baku U-Bahn',
-      p1:       'Wir sind eine Open-Data-Agentur, die sich dem Ziel verschrieben hat, den öffentlichen Nahverkehr in Baku für alle zugänglich zu machen — Einwohner, Touristen und Pendler.',
-      p2:       'Unsere Plattform verbindet Echtzeit-Geolokalisierung, offizielle U-Bahn-Daten und Fußgängernavigation. Keine Werbung, kein Tracking — verlässliche Routen in 30+ Sprachen.',
-      highlight: '30+ Sprachen',
-      pills:    ['🏛️ Offene Daten', '🛰️ GPS', '🆓 Kostenlos', '🌐 30+ Sprachen'],
+      badge: 'Über uns',
+      title: 'Ihr zuverlässiger Begleiter für die Baku U-Bahn',
+      p1: 'Wir sind eine Open-Data-Agentur, die sich dem Ziel verschrieben hat, den öffentlichen Nahverkehr in Baku für alle zugänglich zu machen — Einwohner, Touristen und Pendler.',
+      p2: 'Unsere Plattform verbindet Echtzeit-Geolokalisierung, offizielle U-Bahn-Daten und Fußgängernavigation. Keine Werbung, kein Tracking — verlässliche Routen in 10+ Sprachen.',
+      highlight: '10+ Sprachen',
+      pills: ['🏛️ Offene Daten', '🛰️ GPS', '🆓 Kostenlos', '🌐 10+ Sprachen'],
     },
     exits: 'Ausgänge',
     landing: {
@@ -536,6 +566,12 @@ const T = {
         nav: '24/7 Nav',
         free: 'Kostenlos'
       }
+    },
+    devs: {
+      badge: 'Entwickler',
+      title: 'Gebaut mit offenen Standards',
+      p1: 'Unsere Routing- und Suchfunktionen sind über eine öffentliche REST-API verfügbar, sodass Entwickler die Baku-U-Bahn-Navigation in ihre eigenen Projekte integrieren können.',
+      viewApi: 'API-Dokumentation anzeigen',
     },
   },
   es: {
@@ -592,12 +628,12 @@ const T = {
     light: 'Claro',
     // About section
     about: {
-      badge:    'Sobre nosotros',
-      title:    'Tu guía de confianza para el metro de Bakú',
-      p1:       'Somos una agencia de datos abiertos dedicada a hacer el transporte público de Bakú accesible y comprensible para todos — residentes, turistas y viajeros diarios.',
-      p2:       'Nuestra plataforma combina geolocalización en tiempo real, datos oficiales de estaciones de metro y navegación peatonal. Sin anuncios, sin rastreo — direcciones fiables en 30+ idiomas.',
-      highlight: '30+ idiomas',
-      pills:    ['🏛️ Datos abiertos', '🛰️ GPS', '🆓 Gratis', '🌐 30+ idiomas'],
+      badge: 'Sobre nosotros',
+      title: 'Tu guía de confianza para el metro de Bakú',
+      p1: 'Somos una agencia de datos abiertos dedicada a hacer el transporte público de Bakú accesible y comprensible para todos — residentes, turistas y viajeros diarios.',
+      p2: 'Nuestra plataforma combina geolocalización en tiempo real, datos oficiales de estaciones de metro y navegación peatonal. Sin anuncios, sin rastreo — direcciones fiables en 10+ idiomas.',
+      highlight: '10+ idiomas',
+      pills: ['🏛️ Datos abiertos', '🛰️ GPS', '🆓 Gratis', '🌐 10+ idiomas'],
     },
     exits: 'salidas',
     landing: {
@@ -614,6 +650,12 @@ const T = {
         nav: '24/7 Nav',
         free: 'Gratis'
       }
+    },
+    devs: {
+      badge: 'Desarrolladores',
+      title: 'Construido con estándares abiertos',
+      p1: 'Nuestras capacidades de enrutamiento y búsqueda están expuestas a través de una API REST pública, lo que permite a los desarrolladores integrar la navegación del metro de Bakú en sus propios proyectos.',
+      viewApi: 'Ver documentación de la API',
     },
   },
   it: {
@@ -670,12 +712,12 @@ const T = {
     light: 'Chiaro',
     // About section
     about: {
-      badge:    'Chi siamo',
-      title:    'La tua guida affidabile per la metro di Baku',
-      p1:       'Siamo un\'agenzia di dati aperti dedicata a rendere il trasporto pubblico di Baku accessibile e comprensibile per tutti — residenti, turisti e pendolari quotidiani.',
-      p2:       'La nostra piattaforma combina geolocalizzazione in tempo reale, dati ufficiali delle stazioni metro e navigazione pedonale. Senza pubblicità, senza tracciamento — indicazioni affidabili in 30+ lingue.',
-      highlight: '30+ lingue',
-      pills:    ['🏛️ Dati aperti', '🛰️ GPS', '🆓 Gratuito', '🌐 30+ lingue'],
+      badge: 'Chi siamo',
+      title: 'La tua guida affidabile per la metro di Baku',
+      p1: 'Siamo un\'agenzia di dati aperti dedicata a rendere il trasporto pubblico di Baku accessibile e comprensibile per tutti — residenti, turisti e pendolari quotidiani.',
+      p2: 'La nostra piattaforma combina geolocalizzazione in tempo reale, dati ufficiali delle stazioni metro e navigazione pedonale. Senza pubblicità, senza tracciamento — indicazioni affidabili in 10+ lingue.',
+      highlight: '10+ lingue',
+      pills: ['🏛️ Dati aperti', '🛰️ GPS', '🆓 Gratuito', '🌐 10+ lingue'],
     },
     exits: 'uscite',
     landing: {
@@ -692,6 +734,12 @@ const T = {
         nav: '24/7 Nav',
         free: 'Gratis'
       }
+    },
+    devs: {
+      badge: 'Sviluppatori',
+      title: 'Costruito con standard aperti',
+      p1: 'Le nostre funzionalità di routing e ricerca sono esposte tramite un\'API REST pubblica, consentendo agli sviluppatori di integrare la navigazione della metropolitana di Baku nei propri progetti.',
+      viewApi: 'Visualizza la documentazione API',
     },
   },
   zh: {
@@ -748,12 +796,12 @@ const T = {
     light: '浅色',
     // About section
     about: {
-      badge:    '关于我们',
-      title:    '巴库地铁的可靠指南',
-      p1:       '我们是一家致力于使巴库公共交通对每个人（居民、游客和日常通勤者）都易于访问和理解的开放数据机构。',
-      p2:       '我们的平台结合了实时地理定位、官方地铁站数据和行人导航，提供最准确的导航体验。无广告、无追踪——30多种语言的可靠路线。',
-      highlight: '30+ 语言',
-      pills:    ['🏛️ 开放数据', '🛰️ GPS', '🆓 免费', '🌐 30+ 语言'],
+      badge: '关于我们',
+      title: '巴库地铁的可靠指南',
+      p1: '我们是一家致力于使巴库公共交通对每个人（居民、游客和日常通勤者）都易于访问和理解的开放数据机构。',
+      p2: '我们的平台结合了实时地理定位、官方地铁站数据和行人导航，提供最准确的导航体验。无广告、无追踪——10多种语言的可靠路线。',
+      highlight: '10+ 语言',
+      pills: ['🏛️ 开放数据', '🛰️ GPS', '🆓 免费', '🌐 10+ 语言'],
     },
     exits: '出口',
     landing: {
@@ -770,6 +818,12 @@ const T = {
         nav: '24/7 导航',
         free: '免费'
       }
+    },
+    devs: {
+      badge: '开发者',
+      title: '基于开放标准构建',
+      p1: '我们的核心路由和搜索功能通过公开的 REST API 暴露，允许开发者将巴库地铁导航集成到他们自己的项目中。',
+      viewApi: '查看 API 文档',
     },
   },
   ja: {
@@ -826,12 +880,12 @@ const T = {
     light: 'ライト',
     // About section
     about: {
-      badge:    '私たちについて',
-      title:    'バクー地下鉄の信頼できるガイド',
-      p1:       '私たちは、バクーの公共交通機関を住民、観光客、通勤者など、誰にとってもアクセスしやすく理解しやすいものにすることを目指すオープンデータ機関です。',
-      p2:       '当プラットフォームは、リアルタイムの地理位置情報、公式の地下鉄駅データ、歩行者ナビゲーションを組み合わせ、最も正確なナビゲーション体験を提供します。広告なし、追跡なし——30以上の言語で信頼できるルートを提供します。',
-      highlight: '30以上の言語',
-      pills:    ['🏛️ オープンデータ', '🛰️ GPS', '🆓 無料', '🌐 30+ 言語'],
+      badge: '私たちについて',
+      title: 'バクー地下鉄の信頼できるガイド',
+      p1: '私たちは、バクーの公共交通機関を住民、観光客、通勤者など、誰にとってもアクセスしやすく理解しやすいものにすることを目指すオープンデータ機関です。',
+      p2: '当プラットフォームは、リアルタイムの地理位置情報、公式の地下鉄駅データ、歩行者ナビゲーションを組み合わせ、最も正確なナビゲーション体験を提供します。広告なし、追跡なし——10以上の言語で信頼できるルートを提供します。',
+      highlight: '10以上の言語',
+      pills: ['🏛️ オープンデータ', '🛰️ GPS', '🆓 無料', '🌐 10+ 言語'],
     },
     exits: '出口',
     landing: {
@@ -848,6 +902,12 @@ const T = {
         nav: '24/7 案内',
         free: '無料'
       }
+    },
+    devs: {
+      badge: '開発者',
+      title: 'オープンスタンダードで構築',
+      p1: '当社のコアなルーティングおよび検索機能はパブリックREST APIを通じて公開されており、開発者がバクー地下鉄のナビゲーションを独自のプロジェクトに統合できるようになっています。',
+      viewApi: 'APIドキュメントを表示',
     },
   },
   ko: {
@@ -904,12 +964,12 @@ const T = {
     light: '라이트',
     // About section
     about: {
-      badge:    '저희에 대해',
-      title:    '바쿠 지하철의 신뢰할 수 있는 안내자',
-      p1:       '저희는 바쿠의 대중교통을 모든 사람——주민, 관광객, 일상 통근자——에게 접근 가능하고 이해하기 쉽게 만들기 위한 개방형 데이터 기관입니다.',
-      p2:       '플랫폼은 실시간 위치, 공식 지하철역 데이터 및 보행자 내비게이션을 결합합니다. 광고 없음, 추적 없음——30개 이상의 언어로 신뢰할 수 있는 경로.',
-      highlight: '30개 이상의 언어',
-      pills:    ['🏛️ 개방형 데이터', '🛰️ GPS', '🆓 무료', '🌐 30+ 언어'],
+      badge: '저희에 대해',
+      title: '바쿠 지하철의 신뢰할 수 있는 안내자',
+      p1: '저희는 바쿠의 대중교통을 모든 사람——주민, 관광객, 일상 통근자——에게 접근 가능하고 이해하기 쉽게 만들기 위한 개방형 데이터 기관입니다.',
+      p2: '플랫폼은 실시간 위치, 공식 지하철역 데이터 및 보행자 내비게이션을 결합합니다. 광고 없음, 추적 없음——10개 이상의 언어로 신뢰할 수 있는 경로.',
+      highlight: '10개 이상의 언어',
+      pills: ['🏛️ 개방형 데이터', '🛰️ GPS', '🆓 무료', '🌐 10+ 언어'],
     },
     exits: '출구',
     landing: {
@@ -926,6 +986,12 @@ const T = {
         nav: '24/7 내비',
         free: '무료'
       }
+    },
+    devs: {
+      badge: '개발자',
+      title: '개방형 표준으로 구축됨',
+      p1: '우리의 핵심 라우팅 및 검색 기능은 공개 REST API를 통해 노출되어 개발자가 바쿠 지하철 내비게이션을 자신의 프로젝트에 통합할 수 있도록 합니다.',
+      viewApi: 'API 문서 보기',
     },
   },
   ar: {
@@ -982,12 +1048,12 @@ const T = {
     light: 'فاتح',
     // About section
     about: {
-      badge:    'عنّا',
-      title:    'دليلك الموثوق لمترو باكو',
-      p1:       'نحن وكالة بيانات مفتوحة مكرسة لجعل وسائل النقل العام في باكو في متناول الجميع — السكان والسياح والمسافرين اليوميين.',
-      p2:       'تجمع منصتنا بين تحديد الموقع الجغرافي في الوقت الفعلي وبيانات محطات المترو الرسمية والملاحة للمشاة. بدون إعلانات أو تتبع — توجيهات موثوقة بأكثر من 30 لغة.',
-      highlight: 'أكثر من 30 لغة',
-      pills:    ['🏛️ بيانات مفتوحة', '🛰️ GPS', '🆓 مجاني', '🌐 30+ لغة'],
+      badge: 'عنّا',
+      title: 'دليلك الموثوق لمترو باكو',
+      p1: 'نحن وكالة بيانات مفتوحة مكرسة لجعل وسائل النقل العام في باكو في متناول الجميع — السكان والسياح والمسافرين اليوميين.',
+      p2: 'تجمع منصتنا بين تحديد الموقع الجغرافي في الوقت الفعلي وبيانات محطات المترو الرسمية والملاحة للمشاة. بدون إعلانات أو تتبع — توجيهات موثوقة بأكثر من 10 لغات.',
+      highlight: 'أكثر من 10 لغات',
+      pills: ['🏛️ بيانات مفتوحة', '🛰️ GPS', '🆓 مجاني', '🌐 10+ لغة'],
     },
     exits: 'مخارج',
     landing: {
@@ -1004,6 +1070,12 @@ const T = {
         nav: '24/7 ملاحة',
         free: 'مجاني'
       }
+    },
+    devs: {
+      badge: 'المطورين',
+      title: 'مبني بمعايير مفتوحة',
+      p1: 'يتم عرض قدرات التوجيه والبحث الأساسية لدينا عبر واجهة برمجة تطبيقات REST عامة، مما يسمح للمطورين بدمج ملاحة مترو باكو في مشاريعهم الخاصة.',
+      viewApi: 'عرض توثيق API',
     },
   },
 };

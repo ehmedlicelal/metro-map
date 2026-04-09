@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchPlaces } from '../services/api';
-import { LANGUAGES, PINNED_LANGS, t } from '../i18n/translations';
+import { LANGUAGES, PINNED_LANGS, t } from '../i18n/translations.jsx';
 import { useGeolocation } from '../hooks/useGeolocation';
 import './LandingPage.css';
 
@@ -177,7 +177,7 @@ export default function LandingPage({ onSelectDestination }) {
                   onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
                   autoComplete="off"
                 />
-                {loading && <div className="lp-loader-mini"></div>}
+
               </div>
 
               {isOpen && (
@@ -237,6 +237,24 @@ export default function LandingPage({ onSelectDestination }) {
               <span className="lp-pill" key={pill}>{pill}</span>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── DEVELOPERS ── */}
+      <section className="lp-devs" id="developers">
+        <div className="lp-devs-inner">
+          <div className="lp-devs-badge">{tr.devs.badge}</div>
+          <h2 className="lp-devs-title">{tr.devs.title}</h2>
+          <p className="lp-devs-para">{tr.devs.p1}</p>
+          <a 
+            href="https://metro-map.onrender.com/api-docs" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="lp-devs-btn"
+          >
+            <span className="lp-devs-btn-icon">⚡</span>
+            {tr.devs.viewApi}
+          </a>
         </div>
       </section>
 

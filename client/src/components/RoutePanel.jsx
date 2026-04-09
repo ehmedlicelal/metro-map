@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { t } from '../i18n/translations';
+import { t } from '../i18n/translations.jsx';
 
 /**
  * Slide-up bottom drawer panel showing metro journey information.
